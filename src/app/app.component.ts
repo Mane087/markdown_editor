@@ -1,117 +1,62 @@
-import { Component, effect, signal } from '@angular/core';
+import { Component, effect, signal, computed } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import {
   AsideElement,
   AsideElementModal,
 } from './utils/interfaces/aside-element';
+import { Headings } from './utils/interfaces/headings';
+import { NgClass } from '@angular/common';
+import { listIcons } from './utils/data/list-icon';
+import { listIconsModal } from './utils/data/list-icons-modals';
+import { ListHeadings } from './utils/data/headings';
+import { ModalComponent } from './layouts/modal/modal.component';
+import { ModalUrlComponent } from './components/modal-url/modal-url.component';
+import { ModalImageComponent } from './components/modal-image/modal-image.component';
+import { ModalCodeComponent } from './components/modal-code/modal-code.component';
+import { ModalTableComponent } from './components/modal-table/modal-table.component';
+import { marked } from 'marked';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+
+marked.setOptions({
+  gfm: true, 
+  breaks: true, 
+  async: false,
+});
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [
+    RouterOutlet,
+    NgClass,
+    ModalUrlComponent,
+    ModalImageComponent,
+    ModalCodeComponent,
+    ModalTableComponent,
+  ],
   templateUrl: './app.component.html',
 })
 export class AppComponent {
-  inputValue = signal('');
-  selectedText = signal('');
+  inputValue = signal<string>('');
+  selectedText = signal<string>('');
+  hideOrShowPreview = signal<boolean>(false);
+  fullOrMinPreview = signal<boolean>(false);
+  showModal = signal<boolean>(false);
+  typeOfModal = signal<string>('');
   listIcons: AsideElement[] = [];
   listIconsModal: AsideElementModal[] = [];
+  listHeadings: Headings[] = [];
 
-  constructor() {
+  previewHtml = computed<SafeHtml>(() => {
+    const rawHtml = marked.parse(this.inputValue(), { async: false }) as string;
+    return this.sanitizer.bypassSecurityTrustHtml(rawHtml);
+  });
+
+  constructor(private sanitizer: DomSanitizer) {
     effect(() => {
-      this.listIcons = [
-        {
-          title: 'Bold',
-          iconSrc: '/icons/bold.svg',
-          iconAlt: 'Bold Icon',
-          tag: '<b></b>',
-          insert: 'between',
-        },
-        {
-          title: 'Italic',
-          iconSrc: '/icons/italic.svg',
-          iconAlt: 'Italic Icon',
-          tag: '<i></i>',
-          insert: 'between',
-        },
-        {
-          title: 'Strikethrough',
-          iconSrc: '/icons/strikethrough.svg',
-          iconAlt: 'Strikethrough Icon',
-          tag: '<s></s>',
-          insert: 'between',
-        },
-        {
-          title: 'Quote',
-          iconSrc: '/icons/quote.svg',
-          iconAlt: 'Quote Icon',
-          tag: '>',
-          insert: 'start',
-        },
-        {
-          title: 'Uppercase',
-          iconSrc: '/icons/uppercase.svg',
-          iconAlt: 'Uppercase Icon',
-          tag: '',
-          insert: '',
-        },
-        {
-          title: 'Lowercase',
-          iconSrc: '/icons/lowercase.svg',
-          iconAlt: 'Lowercase Icon',
-          tag: '',
-          insert: '',
-        },
-        {
-          title: 'List',
-          iconSrc: '/icons/list.svg',
-          iconAlt: 'List Icon',
-          tag: '-',
-          insert: 'start',
-        },
-        {
-          title: 'List Numeric',
-          iconSrc: '/icons/list-numeric.svg',
-          iconAlt: 'List Numeric Icon',
-          tag: '1.',
-          insert: 'start',
-        },
-        {
-          title: 'Horizontal Rule',
-          iconSrc: '/icons/line.svg',
-          iconAlt: 'Horizontal Rule Icon',
-          tag: '---',
-          insert: 'start',
-        },
-        {
-          title: 'Code Inline',
-          iconSrc: '/icons/code.svg',
-          iconAlt: 'Code Inline Icon',
-          tag: '``',
-          insert: 'between',
-        },
-      ];
-      this.listIconsModal = [
-        {
-          title: 'Link',
-          iconSrc: '/icons/link.svg',
-          iconAlt: 'Link Icon',
-        },
-        {
-          title: 'Image',
-          iconSrc: '/icons/img.svg',
-          iconAlt: 'Italic Icon',
-        },
-        {
-          title: 'Bloc Code',
-          iconSrc: '/icons/code_bloc.svg',
-          iconAlt: 'Strikethrough Icon',
-        },
-        {
-          title: 'Table',
-          iconSrc: '/icons/table.svg',
-          iconAlt: 'Quote Icon',
-        },
-      ];
+      this.listIcons = listIcons;
+      this.listIconsModal = listIconsModal;
+      this.listHeadings = ListHeadings;
+      window.addEventListener('keydown', this.handleKey.bind(this));
     });
   }
 
@@ -126,12 +71,6 @@ export class AppComponent {
     this.selectedText.set(
       input.value.substring(input.selectionStart ?? 0, input.selectionEnd ?? 0)
     );
-  }
-
-  onKeyDown(event: KeyboardEvent) {
-    if (event.key === 'Backspace') {
-      this.selectedText.set('');
-    }
   }
 
   addElement(tag: string, insert: 'start' | 'between' | '') {
@@ -161,7 +100,7 @@ export class AppComponent {
 
     switch (insert) {
       case 'start':
-        newValue = before + space + tag + selected + after;
+        newValue = before + space + tag + ' ' + selected + after;
         break;
       case 'between':
         const matches = tag.match(/<([a-z]+)[^>]*>(.*?)<\/\1>/i);
@@ -179,5 +118,59 @@ export class AppComponent {
     this.inputValue.set(newValue);
     console.log(this.inputValue());
     this.selectedText.set('');
+  }
+
+  toLowerCaseOrUpper(type: 'lower' | 'upper') {
+    const textarea = document.querySelector('textarea') as HTMLTextAreaElement;
+    const start = textarea.selectionStart ?? 0;
+    const end = textarea.selectionEnd ?? 0;
+
+    const before = this.inputValue().slice(0, start);
+    console.log(before, ' - BEFORE');
+    const selected = this.inputValue().slice(start, end);
+    console.log(selected, ' - SELECTED');
+    const after = this.inputValue().slice(end);
+    console.log(after, ' - AFTER');
+
+    let text =
+      type === 'upper' ? selected.toUpperCase() : selected.toLowerCase();
+
+    let newValue = before + text + after;
+
+    this.selectedText.set('');
+    return this.inputValue.set(newValue);
+  }
+
+  hideOrShowPreviewToggle() {
+    this.hideOrShowPreview.set(!this.hideOrShowPreview());
+  }
+
+  fullOrMinPreviewToggle() {
+    this.fullOrMinPreview.set(!this.fullOrMinPreview());
+  }
+
+  onHeadingChange(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    const value = select.value;
+    this.addElement(value, 'start');
+    select.value = '';
+  }
+
+  openModal(value: boolean, typeModal: string) {
+    this.showModal.set(value);
+    this.typeOfModal.set(typeModal);
+  }
+
+  handleKey(event: KeyboardEvent) {
+    if (event.key === 'Escape') {
+      this.showModal.set(false);
+    } else if (event.key === 'Backspace') {
+      this.selectedText.set('');
+    }
+  }
+
+  addContentFromModal(value: string) {
+    let isInputEmpty = this.inputValue() == '' ? '' : '\n';
+    this.inputValue.set(this.inputValue() + isInputEmpty + value);
   }
 }

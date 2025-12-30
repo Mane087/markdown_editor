@@ -1,6 +1,43 @@
 /* You can add global styles to this file, and also import other style files */
 @import "tailwindcss";
+@import "github-markdown-css/github-markdown.css";
 
 body {
-    background-color: #343434;
+  background-color: #343434;
+}
+
+html ::selection {
+  background-color: #6b7280;
+  color: white;
+}
+
+.markdown-body {
+  background-color: white;
+  color: #24292f;
+}
+
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+}
+
+
+.markdown-body th {
+  background-color: #e0e0e0; /* gray-100 */
+  color: #111827; /* gray-900 */
+  font-weight: 600;
+  border: 1px solid #e5e7eb;
+  padding: 8px;
+}
+
+.markdown-body td {
+  background-color: #f3f4f6;
+  border: 1px solid #c2c3c5;
+  padding: 8px;
+  color: #374151; /* gray-700 */
+}
+
+.markdown-body tr:nth-child(even) {
+  background-color: #f9fafb;
 }

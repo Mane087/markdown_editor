@@ -1,0 +1,47 @@
+<app-modal>
+  <div id="head-modal" class="w-full border-b border-[#cccc]">
+    <p class="text-2xl text-gray-700 font-medium">URL</p>
+  </div>
+  <div id="body-modal" class="flex flex-col py-4">
+    <div
+      class="flex flex-col justify-center py-2 w-3/4 h-max mx-auto"
+    >
+      <label>Columns:</label>
+      <input
+        type="number"
+        (click)="clickInput($event, 'column')"
+        class="w-full h-8 mx-auto rounded-md border border-[#cccc] focus:outline-none focus:ring-0 focus:border-gray-400 focus:border-2 px-2"
+      />
+    </div>
+
+    <div
+      class="flex flex-col justify-center py-2 w-3/4 h-max mx-auto"
+    >
+      <label>Rows:</label>
+      <input
+        type="number"
+        (click)="clickInput($event, 'row')"
+        class="w-full h-8 rounded-md border border-[#cccc] focus:outline-none focus:ring-0 focus:border-gray-400 focus:border-2 px-2"
+      />
+    </div>
+  </div>
+  <div
+    id="footer-modal"
+    class="mx-auto flex justify-between items-center w-1/2 h-fit"
+  >
+    <button
+      type="button"
+      (click)="saveModal()"
+      class="rounded-md border-none w-24 h-fit p-2 bg-gray-800 text-white text-base cursor-pointer hover:opacity-80 transition-opacity"
+    >
+      Agregar
+    </button>
+    <button
+      type="button"
+      (click)="closeModal()"
+      class="rounded-md border-none w-24 h-fit p-2 bg-gray-500 text-white text-base cursor-pointer hover:opacity-80 transition-opacity"
+    >
+      Cancelar
+    </button>
+  </div>
+</app-modal>
