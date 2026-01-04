@@ -7,17 +7,10 @@ import { ModalComponent } from '../../layouts/modal/modal.component';
   templateUrl: './modal-image.component.html',
 })
 export class ModalImageComponent {
-  typeURL = signal<string>('');
   urlImg = signal<string>('');
   titleImg = signal<string>('');
   hideOrShowModal = output<boolean>();
   modalValue = output<string>();
-
-  onChange(event: Event) {
-    const select = event.target as HTMLSelectElement;
-    const value = select.value;
-    this.typeURL.set(value);
-  }
 
   closeModal() {
     this.hideOrShowModal.emit(false);
