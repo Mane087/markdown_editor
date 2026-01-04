@@ -1,4 +1,4 @@
-import { Languages } from '../interfaces/lenguages';
+import type { Languages } from '../interfaces/lenguages';
 
 export const listLanguages: Languages[] = [
   { lenguage: 'Select an option', md: '' },

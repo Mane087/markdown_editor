@@ -1,13 +1,12 @@
 import { Component, effect, output, signal } from '@angular/core';
 import { ModalComponent } from '../../layouts/modal/modal.component';
-import { Languages } from '../../utils/interfaces/lenguages';
+import type { Languages } from '../../utils/interfaces/lenguages';
 import { listLanguages } from '../../utils/data/list-lenguages';
 
 @Component({
   selector: 'app-modal-code',
   imports: [ModalComponent],
   templateUrl: './modal-code.component.html',
-  styleUrl: './modal-code.component.css',
 })
 export class ModalCodeComponent {
   typeLanguage = signal<string>('');
@@ -33,7 +32,7 @@ export class ModalCodeComponent {
   }
 
   saveModal() {
-    let formatValue = '```' + this.typeLanguage() + '\n' + this.codeValue() + '\n```';
+    const formatValue = '```' + this.typeLanguage() + '\n' + this.codeValue() + '\n```';
     this.modalValue.emit(formatValue);
     this.hideOrShowModal.emit(false);
   }

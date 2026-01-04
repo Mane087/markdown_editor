@@ -1,4 +1,4 @@
-import { AsideElementModal } from '../interfaces/aside-element';
+import type { AsideElementModal } from '../interfaces/aside-element';
 
 export const listIconsModal: AsideElementModal[] = [
   {

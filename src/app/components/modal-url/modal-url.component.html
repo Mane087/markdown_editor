@@ -3,7 +3,7 @@
     <p class="text-2xl text-gray-700 font-medium">URL</p>
   </div>
   <div id="body-modal" class="flex flex-col py-4">
-    <label class="block mb-2">Type of URL:</label>
+    <p class="block mb-2">Type of URL:</p>
     <select
       name=""
       id=""
@@ -14,18 +14,18 @@
       <option value="custom">Custom URL</option>
     </select>
 
-    @if(typeURL() == 'custom'){
-    <div class="flex flex-col justify-center py-2">
-      <label>Name of URL:</label>
-      <input
-        type="text"
-        (input)="onInput($event, 'title')"
-        class="w-full h-8 rounded-md border border-[#cccc] focus:outline-none focus:ring-0 focus:border-gray-400 focus:border-2 pl-2"
-      />
-    </div>
+    @if (typeURL() === 'custom') {
+      <div class="flex flex-col justify-center py-2">
+        <p>Name of URL:</p>
+        <input
+          type="text"
+          (input)="onInput($event, 'title')"
+          class="w-full h-8 rounded-md border border-[#cccc] focus:outline-none focus:ring-0 focus:border-gray-400 focus:border-2 pl-2"
+        />
+      </div>
     }
     <div class="flex flex-col justify-center py-2">
-      <label>URL:</label>
+      <p>URL:</p>
       <input
         type="text"
         (input)="onInput($event, 'url')"
@@ -33,10 +33,7 @@
       />
     </div>
   </div>
-  <div
-    id="footer-modal"
-    class="mx-auto flex justify-between items-center w-1/2 h-fit"
-  >
+  <div id="footer-modal" class="mx-auto flex justify-between items-center w-1/2 h-fit">
     <button
       type="button"
       (click)="saveModal()"

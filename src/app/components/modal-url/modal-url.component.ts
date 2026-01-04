@@ -1,11 +1,10 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, output, signal } from '@angular/core';
 import { ModalComponent } from '../../layouts/modal/modal.component';
 
 @Component({
   selector: 'app-modal-url',
   imports: [ModalComponent],
   templateUrl: './modal-url.component.html',
-  styleUrl: './modal-url.component.css',
 })
 export class ModalUrlComponent {
   typeURL = signal<string>('');

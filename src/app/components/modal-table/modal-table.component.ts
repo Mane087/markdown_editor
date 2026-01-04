@@ -5,7 +5,6 @@ import { ModalComponent } from '../../layouts/modal/modal.component';
   selector: 'app-modal-table',
   imports: [ModalComponent],
   templateUrl: './modal-table.component.html',
-  styleUrl: './modal-table.component.css',
 })
 export class ModalTableComponent {
   numColumns = signal<string>('');

@@ -5,7 +5,6 @@ import { ModalComponent } from '../../layouts/modal/modal.component';
   selector: 'app-modal-image',
   imports: [ModalComponent],
   templateUrl: './modal-image.component.html',
-  styleUrl: './modal-image.component.css',
 })
 export class ModalImageComponent {
   typeURL = signal<string>('');

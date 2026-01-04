@@ -1,4 +1,4 @@
-import { AsideElement } from '../interfaces/aside-element';
+import type { AsideElement } from '../interfaces/aside-element';
 
 export const listIcons: AsideElement[] = [
   {
@@ -7,6 +7,7 @@ export const listIcons: AsideElement[] = [
     iconAlt: 'Bold Icon',
     tag: '<b></b>',
     insert: 'between',
+    combo: 'ctrl+alt+b',
   },
   {
     title: 'Italic',
@@ -14,6 +15,7 @@ export const listIcons: AsideElement[] = [
     iconAlt: 'Italic Icon',
     tag: '<i></i>',
     insert: 'between',
+    combo: 'ctrl+alt+i',
   },
   {
     title: 'Strikethrough',
@@ -21,6 +23,7 @@ export const listIcons: AsideElement[] = [
     iconAlt: 'Strikethrough Icon',
     tag: '<s></s>',
     insert: 'between',
+    combo: 'ctrl+alt+s',
   },
   {
     title: 'Quote',
@@ -28,6 +31,7 @@ export const listIcons: AsideElement[] = [
     iconAlt: 'Quote Icon',
     tag: '>',
     insert: 'start',
+    combo: 'ctrl+alt+q',
   },
   {
     title: 'List',
@@ -35,6 +39,7 @@ export const listIcons: AsideElement[] = [
     iconAlt: 'List Icon',
     tag: '-',
     insert: 'start',
+    combo: 'ctrl+alt+l',
   },
   {
     title: 'List Numeric',
@@ -42,6 +47,7 @@ export const listIcons: AsideElement[] = [
     iconAlt: 'List Numeric Icon',
     tag: '1.',
     insert: 'start',
+    combo: 'ctrl+alt+n',
   },
   {
     title: 'Horizontal Rule',
@@ -49,6 +55,7 @@ export const listIcons: AsideElement[] = [
     iconAlt: 'Horizontal Rule Icon',
     tag: '---',
     insert: 'start',
+    combo: 'ctrl+alt+r',
   },
   {
     title: 'Code Inline',
@@ -56,5 +63,6 @@ export const listIcons: AsideElement[] = [
     iconAlt: 'Code Inline Icon',
     tag: '``',
     insert: 'between',
+    combo: 'ctrl+alt+c',
   },
 ];

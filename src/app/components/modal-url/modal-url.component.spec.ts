@@ -1,4 +1,5 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import type { ComponentFixture } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 
 import { ModalUrlComponent } from './modal-url.component';
 
@@ -8,9 +9,8 @@ describe('ModalUrlComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ModalUrlComponent]
-    })
-    .compileComponents();
+      imports: [ModalUrlComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(ModalUrlComponent);
     component = fixture.componentInstance;

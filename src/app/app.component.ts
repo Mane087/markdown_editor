@@ -1,26 +1,45 @@
-import { Component, effect, signal, computed } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import {
-  AsideElement,
-  AsideElementModal,
-} from './utils/interfaces/aside-element';
-import { Headings } from './utils/interfaces/headings';
-import { NgClass } from '@angular/common';
-import { listIcons } from './utils/data/list-icon';
-import { listIconsModal } from './utils/data/list-icons-modals';
-import { ListHeadings } from './utils/data/headings';
-import { ModalComponent } from './layouts/modal/modal.component';
-import { ModalUrlComponent } from './components/modal-url/modal-url.component';
-import { ModalImageComponent } from './components/modal-image/modal-image.component';
-import { ModalCodeComponent } from './components/modal-code/modal-code.component';
-import { ModalTableComponent } from './components/modal-table/modal-table.component';
+import hljs from 'highlight.js';
+import type { Tokens } from 'marked';
 import { marked } from 'marked';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { NgClass } from '@angular/common';
+import { RouterOutlet } from '@angular/router';
+import { Component, effect, signal, computed, inject } from '@angular/core';
+import type { SafeHtml } from '@angular/platform-browser';
+import { DomSanitizer } from '@angular/platform-browser';
+
+import type { AsideElement, AsideElementModal } from './utils/interfaces/aside-element';
+import type { Headings } from './utils/interfaces/headings';
+
+import { listIcons } from './utils/data/list-icon';
+import { ListHeadings } from './utils/data/headings';
+import { listIconsModal } from './utils/data/list-icons-modals';
+
+import { ModalUrlComponent } from './components/modal-url/modal-url.component';
+import { ModalCodeComponent } from './components/modal-code/modal-code.component';
+import { ModalImageComponent } from './components/modal-image/modal-image.component';
+import { ModalTableComponent } from './components/modal-table/modal-table.component';
+import { ShortcutsService } from './utils/services/shortcuts.service';
 
 marked.setOptions({
-  gfm: true, 
-  breaks: true, 
+  gfm: true,
+  breaks: true,
   async: false,
+});
+
+marked.use({
+  renderer: {
+    code(token: Tokens.Code) {
+      const { text, lang } = token;
+
+      if (lang && hljs.getLanguage(lang)) {
+        const highlighted = hljs.highlight(text, { language: lang }).value;
+        return `<pre><code class="hljs language-${lang}">${highlighted}</code></pre>`;
+      }
+
+      const auto = hljs.highlightAuto(text).value;
+      return `<pre><code class="hljs">${auto}</code></pre>`;
+    },
+  },
 });
 
 @Component({
@@ -38,25 +57,47 @@ marked.setOptions({
 export class AppComponent {
   inputValue = signal<string>('');
   selectedText = signal<string>('');
-  hideOrShowPreview = signal<boolean>(false);
+  hideOrShowPreview = signal<boolean>(true);
   fullOrMinPreview = signal<boolean>(false);
   showModal = signal<boolean>(false);
   typeOfModal = signal<string>('');
+
   listIcons: AsideElement[] = [];
   listIconsModal: AsideElementModal[] = [];
   listHeadings: Headings[] = [];
+
+  private sanitizer = inject(DomSanitizer);
+  private shortcutsService = inject(ShortcutsService);
 
   previewHtml = computed<SafeHtml>(() => {
     const rawHtml = marked.parse(this.inputValue(), { async: false }) as string;
     return this.sanitizer.bypassSecurityTrustHtml(rawHtml);
   });
 
-  constructor(private sanitizer: DomSanitizer) {
+  constructor() {
     effect(() => {
       this.listIcons = listIcons;
       this.listIconsModal = listIconsModal;
       this.listHeadings = ListHeadings;
       window.addEventListener('keydown', this.handleKey.bind(this));
+
+      const shortcuts = this.listIcons
+        .filter((icon) => icon.combo)
+        .map((icon) => ({
+          combo: icon.combo!,
+          run: () => this.addElement(icon.tag, icon.insert),
+        }));
+
+      const shortcutHeadings = this.listHeadings
+        .filter((icon) => icon.combo)
+        .map((icon) => ({
+          combo: icon.combo,
+          run: () => this.addElement(icon.value, 'start'),
+        }));
+
+      shortcuts.push(...shortcutHeadings);
+
+      this.shortcutsService.register(shortcuts);
     });
   }
 
@@ -69,17 +110,13 @@ export class AppComponent {
   onSelect(event: Event) {
     const input = event.target as HTMLTextAreaElement;
     this.selectedText.set(
-      input.value.substring(input.selectionStart ?? 0, input.selectionEnd ?? 0)
+      input.value.substring(input.selectionStart ?? 0, input.selectionEnd ?? 0),
     );
   }
 
   addElement(tag: string, insert: 'start' | 'between' | '') {
-    console.log(`Inserting tag: ${tag} at position: ${insert}`);
-    console.log(this.selectedText(), ' - SELECTED TEXT');
-
     if (this.selectedText() === '') {
-      let breakLine = this.inputValue() != '' ? '\n' : '';
-      console.log(breakLine, ' - BREAKLINE');
+      const breakLine = this.inputValue() != '' ? '\n' : '';
       this.inputValue.set(this.inputValue() + breakLine + tag);
       return;
     }
@@ -89,20 +126,17 @@ export class AppComponent {
     const end = textarea.selectionEnd ?? 0;
 
     const before = this.inputValue().slice(0, start);
-    console.log(before, ' - BEFORE');
     const selected = this.inputValue().slice(start, end);
-    console.log(selected, ' - SELECTED');
     const after = this.inputValue().slice(end);
-    console.log(after, ' - AFTER');
 
     let newValue = '';
-    let space = before != '' ? '\n' : '';
+    const space = before != '' ? '\n' : '';
 
     switch (insert) {
       case 'start':
         newValue = before + space + tag + ' ' + selected + after;
         break;
-      case 'between':
+      case 'between': {
         const matches = tag.match(/<([a-z]+)[^>]*>(.*?)<\/\1>/i);
         if (matches) {
           const openTag = tag.replace(/<\/[a-z]+>.*$/, ''); // <b>
@@ -110,13 +144,13 @@ export class AppComponent {
           newValue = before + openTag + selected + closeTag + after;
         }
         break;
+      }
       default:
         newValue = this.inputValue() + tag;
         break;
     }
 
     this.inputValue.set(newValue);
-    console.log(this.inputValue());
     this.selectedText.set('');
   }
 
@@ -126,16 +160,12 @@ export class AppComponent {
     const end = textarea.selectionEnd ?? 0;
 
     const before = this.inputValue().slice(0, start);
-    console.log(before, ' - BEFORE');
     const selected = this.inputValue().slice(start, end);
-    console.log(selected, ' - SELECTED');
     const after = this.inputValue().slice(end);
-    console.log(after, ' - AFTER');
 
-    let text =
-      type === 'upper' ? selected.toUpperCase() : selected.toLowerCase();
+    const text = type === 'upper' ? selected.toUpperCase() : selected.toLowerCase();
 
-    let newValue = before + text + after;
+    const newValue = before + text + after;
 
     this.selectedText.set('');
     return this.inputValue.set(newValue);
@@ -162,15 +192,19 @@ export class AppComponent {
   }
 
   handleKey(event: KeyboardEvent) {
+    if (event.repeat) return;
     if (event.key === 'Escape') {
       this.showModal.set(false);
     } else if (event.key === 'Backspace') {
       this.selectedText.set('');
     }
+    if (this.shortcutsService.handle(event)) {
+      return;
+    }
   }
 
   addContentFromModal(value: string) {
-    let isInputEmpty = this.inputValue() == '' ? '' : '\n';
+    const isInputEmpty = this.inputValue() == '' ? '' : '\n';
     this.inputValue.set(this.inputValue() + isInputEmpty + value);
   }
 }

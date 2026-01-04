@@ -1,4 +1,5 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import type { ComponentFixture } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 
 import { ModalCodeComponent } from './modal-code.component';
 
@@ -8,9 +9,8 @@ describe('ModalCodeComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ModalCodeComponent]
-    })
-    .compileComponents();
+      imports: [ModalCodeComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(ModalCodeComponent);
     component = fixture.componentInstance;

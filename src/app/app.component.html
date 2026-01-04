@@ -1,20 +1,19 @@
 <div class="w-full h-dvh mx-auto flex flex-col">
   <header class="w-full h-fit px-5 py-3 flex justify-center items-center">
-    <img
-      src="/icons/logo_app.svg"
-      alt="Markdown Editor"
-      class="h-14 w-14 mr-4"
-    />
+    <img src="/icons/logo_app.svg" alt="Markdown Editor" class="h-14 w-14 mr-4" />
     <div class="w-full h-fit flex px-3 items-center">
       <ul class="list-none h-fit w-fit flex items-center gap-x-3">
-        @for (icon of listIcons; track $index){
-        <li
-          class="cursor-pointer hover:opacity-70"
-          [title]="icon.title"
-          (click)="addElement(icon.tag, icon.insert)"
-        >
-          <img [src]="icon.iconSrc" [alt]="icon.iconAlt" />
-        </li>
+        @for (icon of listIcons; track $index) {
+          <li
+            class="cursor-pointer hover:opacity-70"
+            [title]="icon.title"
+            (click)="addElement(icon.tag, icon.insert)"
+            (keydown.enter)="addElement(icon.tag, icon.insert)"
+            (keydown.space)="addElement(icon.tag, icon.insert)"
+            tabindex="0"
+          >
+            <img [src]="icon.iconSrc" [alt]="icon.iconAlt" />
+          </li>
         }
       </ul>
 
@@ -42,34 +41,31 @@
         (change)="onHeadingChange($event)"
       >
         <option value="" selected hidden>H#</option>
-        @for (heading of listHeadings; track $index){
-        <option [value]="heading.value">{{ heading.content }}</option>
+        @for (heading of listHeadings; track $index) {
+          <option [value]="heading.value">{{ heading.content }}</option>
         }
       </select>
 
       <ul class="list-none flex items-center gap-x-3">
-        @for (icon of listIconsModal; track $index){
-        <li
-          class="cursor-pointer hover:opacity-70"
-          [title]="icon.title"
-          (click)="openModal(true, icon.title)"
-        >
-          <img [src]="icon.iconSrc" [alt]="icon.iconAlt" />
-        </li>
+        @for (icon of listIconsModal; track $index) {
+          <li
+            class="cursor-pointer hover:opacity-70"
+            [title]="icon.title"
+            (click)="openModal(true, icon.title)"
+            (keydown.enter)="openModal(true, icon.title)"
+            (keydown.space)="openModal(true, icon.title)"
+            tabindex="0"
+          >
+            <img [src]="icon.iconSrc" [alt]="icon.iconAlt" />
+          </li>
         }
       </ul>
 
-      <button
-        class="bg-none border-none ml-3 cursor-pointer hover:opacity-70"
-        title="Download MD"
-      >
+      <button class="bg-none border-none ml-3 cursor-pointer hover:opacity-70" title="Download MD">
         <img src="/icons/download_file.svg" alt="Redo" class="w-6 h-6" />
       </button>
 
-      <button
-        class="bg-none border-none ml-3 cursor-pointer hover:opacity-70"
-        title="Download PDF"
-      >
+      <button class="bg-none border-none ml-3 cursor-pointer hover:opacity-70" title="Download PDF">
         <img src="/icons/pdf_file.svg" alt="Redo" class="w-6 h-6" />
       </button>
 
@@ -78,10 +74,10 @@
         [title]="hideOrShowPreview() ? 'Hide Preview' : 'Show Preview'"
         (click)="hideOrShowPreviewToggle()"
       >
-        @if(hideOrShowPreview()) {
-        <img src="/icons/close_eye.svg" alt="open_eye" class="w-6 h-6" />
+        @if (hideOrShowPreview()) {
+          <img src="/icons/close_eye.svg" alt="open_eye" class="w-6 h-6" />
         } @else {
-        <img src="/icons/eye.svg" alt="close_eye" class="w-6 h-6" />
+          <img src="/icons/eye.svg" alt="close_eye" class="w-6 h-6" />
         }
       </button>
 
@@ -91,45 +87,46 @@
         (click)="fullOrMinPreviewToggle()"
         [disabled]="!hideOrShowPreview()"
       >
-        @if(!fullOrMinPreview()) {
-        <img src="/icons/full_preview.svg" alt="open_eye" class="w-6 h-6" />
+        @if (!fullOrMinPreview()) {
+          <img src="/icons/full_preview.svg" alt="open_eye" class="w-6 h-6" />
         } @else {
-        <img src="/icons/min_preview.svg" alt="close_eye" class="w-6 h-6" />
+          <img src="/icons/min_preview.svg" alt="close_eye" class="w-6 h-6" />
         }
       </button>
     </div>
   </header>
   <div class="w-full h-5/6 flex px-5">
-    @if(!fullOrMinPreview()){
-    <div
-      [ngClass]="{
-        'w-full rounded-2xl': !hideOrShowPreview(),
-        'w-1/2 rounded-l-2xl': hideOrShowPreview()
-      }"
-      class="h-full bg-white flex border-r border-[#cccc] overflow-hidden"
-    >
-      <textarea
-        name=""
-        id=""
-        class="w-full h-full p-5 text-left resize-none outline-none border-none overflow-y-auto"
-        (input)="onInput($event)"
-        [value]="inputValue()"
-        (select)="onSelect($event)"
-        (keydown)="handleKey($event)"
+    @if (!fullOrMinPreview()) {
+      <div
+        [ngClass]="{
+          'w-full rounded-2xl': !hideOrShowPreview(),
+          'w-1/2 rounded-l-2xl': hideOrShowPreview(),
+        }"
+        class="h-full bg-white flex border-r border-[#cccc] overflow-hidden"
       >
+        <textarea
+          name=""
+          id=""
+          class="w-full h-full p-5 text-left resize-none outline-none border-none overflow-y-auto"
+          (input)="onInput($event)"
+          [value]="inputValue()"
+          (select)="onSelect($event)"
+        >
         {{ inputValue() }}
-      </textarea>
-    </div>
-    } @if(hideOrShowPreview()){
-    <div
-      [ngClass]="{
-        'w-full rounded-2xl': fullOrMinPreview(),
-        'w-1/2 rounded-r-2xl': !fullOrMinPreview()
-      }"
-      class="w-1/2 h-full bg-white p-5 overflow-y-auto markdown-body"
-    >
-      <div [innerHTML]="previewHtml()"></div>
-    </div>
+      </textarea
+        >
+      </div>
+    }
+    @if (hideOrShowPreview()) {
+      <div
+        [ngClass]="{
+          'w-full rounded-2xl': fullOrMinPreview(),
+          'w-1/2 rounded-r-2xl': !fullOrMinPreview(),
+        }"
+        class="w-1/2 h-full bg-white p-5 overflow-y-auto markdown-body"
+      >
+        <div [innerHTML]="previewHtml()"></div>
+      </div>
     }
   </div>
   <footer>
@@ -137,27 +134,34 @@
       <p class="text-sm text-gray-500">Markdown Editor. Open Source Proyect</p>
     </div>
   </footer>
-  @if(showModal()){ @switch (typeOfModal()) { @case('Link') {
-  <app-modal-url
-    (hideOrShowModal)="openModal($event, '')"
-    (modalValue)="addContentFromModal($event)"
-  />
-  } @case('Image') {
-  <app-modal-image
-    (hideOrShowModal)="openModal($event, '')"
-    (modalValue)="addContentFromModal($event)"
-  />
-  } @case('Bloc Code') {
-  <app-modal-code
-    (hideOrShowModal)="openModal($event, '')"
-    (modalValue)="addContentFromModal($event)"
-  />
-  } @case('Table') {
-  <app-modal-table
-    (hideOrShowModal)="openModal($event, '')"
-    (modalValue)="addContentFromModal($event)"
-  />
-  } } }
+  @if (showModal()) {
+    @switch (typeOfModal()) {
+      @case ('Link') {
+        <app-modal-url
+          (hideOrShowModal)="openModal($event, '')"
+          (modalValue)="addContentFromModal($event)"
+        />
+      }
+      @case ('Image') {
+        <app-modal-image
+          (hideOrShowModal)="openModal($event, '')"
+          (modalValue)="addContentFromModal($event)"
+        />
+      }
+      @case ('Bloc Code') {
+        <app-modal-code
+          (hideOrShowModal)="openModal($event, '')"
+          (modalValue)="addContentFromModal($event)"
+        />
+      }
+      @case ('Table') {
+        <app-modal-table
+          (hideOrShowModal)="openModal($event, '')"
+          (modalValue)="addContentFromModal($event)"
+        />
+      }
+    }
+  }
 </div>
 
 <router-outlet />
