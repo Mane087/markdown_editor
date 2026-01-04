@@ -26,7 +26,11 @@
     "lint:fix": "ng lint --fix",
     "test": "jest",
     "test:watch": "jest --watchAll",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui",
+    "e2e:debug": "playwright test --debug",
+    "e2e:report": "playwright show-report"
   },
   "private": true,
   "dependencies": {
@@ -54,6 +58,7 @@
     "@angular/compiler-cli": "^20.3.15",
     "@commitlint/cli": "^20.3.0",
     "@commitlint/config-conventional": "^20.3.0",
+    "@playwright/test": "^1.57.0",
     "@types/jest": "^30.0.0",
     "angular-eslint": "21.0.1",
     "baseline-browser-mapping": "^2.9.11",
