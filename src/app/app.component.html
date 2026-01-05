@@ -49,6 +49,7 @@
       <ul class="list-none flex items-center gap-x-3">
         @for (icon of listIconsModal; track $index) {
           <li
+            [attr.data-testid]="icon.id"
             class="cursor-pointer hover:opacity-70"
             [title]="icon.title"
             (click)="openModal(true, icon.title)"
@@ -105,16 +106,13 @@
         class="h-full bg-white flex border-r border-[#cccc] overflow-hidden"
       >
         <textarea
-          name=""
-          id=""
+          data-testid="editor-textarea"
           class="w-full h-full p-5 text-left resize-none outline-none border-none overflow-y-auto"
           (input)="onInput($event)"
           [value]="inputValue()"
           (select)="onSelect($event)"
         >
-        {{ inputValue() }}
-      </textarea
-        >
+        </textarea>
       </div>
     }
     @if (hideOrShowPreview()) {

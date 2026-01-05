@@ -1,6 +1,9 @@
 <div class="fixed inset-0 z-10 bg-[#00000050] flex justify-center items-center"></div>
 <div class="fixed inset-0 z-20 flex justify-center items-center">
-  <div class="bg-white p-6 rounded-xl shadow-lg min-w-[500px] max-w-[900px] min-h-min max-h-max overflow-y-auto">
+  <div
+    data-testid="modal-surface"
+    class="bg-white p-6 rounded-xl shadow-lg min-w-[500px] max-w-[900px] min-h-min max-h-max overflow-y-auto"
+  >
     <ng-content></ng-content>
   </div>
 </div>

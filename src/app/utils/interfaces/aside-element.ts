@@ -5,6 +5,7 @@ export interface AsideElement {
   tag: string;
   insert: 'start' | 'between' | '';
   combo?: string;
+  id?: string;
 }
 
 export type AsideElementModal = Omit<AsideElement, 'insert' | 'tag'>;
