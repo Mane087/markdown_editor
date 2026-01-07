@@ -1,41 +1,43 @@
-<app-modal>
-  <div id="head-modal" class="w-full border-b border-[#cccc]">
-    <p class="text-2xl text-gray-700 font-medium">Image</p>
+<div id="head-modal" class="w-full border-b border-[#cccc]">
+  <p class="text-2xl text-gray-700 font-medium">Image</p>
+</div>
+<div id="body-modal" class="flex flex-col py-4">
+  <div class="flex flex-col justify-center py-2">
+    <p>Name of image:</p>
+    <input
+      data-testid="input-title-image"
+      type="text"
+      (input)="onInput($event, 'title')"
+      class="w-full h-8 rounded-md border border-[#cccc] focus:outline-none focus:ring-0 focus:border-gray-400 focus:border-2 pl-2"
+    />
   </div>
-  <div id="body-modal" class="flex flex-col py-4">
-    <div class="flex flex-col justify-center py-2">
-      <p>Name of image:</p>
-      <input
-        type="text"
-        (input)="onInput($event, 'title')"
-        class="w-full h-8 rounded-md border border-[#cccc] focus:outline-none focus:ring-0 focus:border-gray-400 focus:border-2 pl-2"
-      />
-    </div>
 
-    <div class="flex flex-col justify-center py-2">
-      <p>URL image:</p>
-      <input
-        type="text"
-        (input)="onInput($event, 'url')"
-        [value]="urlImg()"
-        class="w-full h-8 rounded-md border border-[#cccc] focus:outline-none focus:ring-0 focus:border-gray-400 focus:border-2 pl-2"
-      />
-    </div>
+  <div class="flex flex-col justify-center py-2">
+    <p>URL image:</p>
+    <input
+      data-testid="input-url-image"
+      type="text"
+      (input)="onInput($event, 'url')"
+      [value]="urlImg()"
+      class="w-full h-8 rounded-md border border-[#cccc] focus:outline-none focus:ring-0 focus:border-gray-400 focus:border-2 pl-2"
+    />
   </div>
-  <div id="footer-modal" class="mx-auto flex justify-between items-center w-1/2 h-fit">
-    <button
-      type="button"
-      class="rounded-md border-none w-24 h-fit p-2 bg-gray-800 text-white text-base cursor-pointer hover:opacity-80 transition-opacity"
-      (click)="saveModal()"
-    >
-      Agregar
-    </button>
-    <button
-      type="button"
-      (click)="closeModal()"
-      class="rounded-md border-none w-24 h-fit p-2 bg-gray-500 text-white text-base cursor-pointer hover:opacity-80 transition-opacity"
-    >
-      Cancelar
-    </button>
-  </div>
-</app-modal>
+</div>
+<div id="footer-modal" class="mx-auto flex justify-between items-center w-1/2 h-fit">
+  <button
+    data-testid="img-save"
+    type="button"
+    class="rounded-md border-none w-24 h-fit p-2 bg-gray-800 text-white text-base cursor-pointer hover:opacity-80 transition-opacity"
+    (click)="saveModal()"
+  >
+    Agregar
+  </button>
+  <button
+    data-testid="img-cancel"
+    type="button"
+    (click)="closeModal()"
+    class="rounded-md border-none w-24 h-fit p-2 bg-gray-500 text-white text-base cursor-pointer hover:opacity-80 transition-opacity"
+  >
+    Cancelar
+  </button>
+</div>

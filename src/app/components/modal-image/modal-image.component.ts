@@ -1,9 +1,8 @@
 import { Component, output, signal } from '@angular/core';
-import { ModalComponent } from '../../layouts/modal/modal.component';
 
 @Component({
   selector: 'app-modal-image',
-  imports: [ModalComponent],
+  imports: [],
   templateUrl: './modal-image.component.html',
 })
 export class ModalImageComponent {

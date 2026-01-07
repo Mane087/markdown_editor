@@ -1,9 +1,8 @@
 import { Component, output, signal } from '@angular/core';
-import { ModalComponent } from '../../layouts/modal/modal.component';
 
 @Component({
   selector: 'app-modal-url',
-  imports: [ModalComponent],
+  imports: [],
   templateUrl: './modal-url.component.html',
 })
 export class ModalUrlComponent {

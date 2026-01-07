@@ -62,13 +62,13 @@
         }
       </ul>
 
-      <button class="bg-none border-none ml-3 cursor-pointer hover:opacity-70" title="Download MD">
+      <!-- <button class="bg-none border-none ml-3 cursor-pointer hover:opacity-70" title="Download MD">
         <img src="/icons/download_file.svg" alt="Redo" class="w-6 h-6" />
       </button>
 
       <button class="bg-none border-none ml-3 cursor-pointer hover:opacity-70" title="Download PDF">
         <img src="/icons/pdf_file.svg" alt="Redo" class="w-6 h-6" />
-      </button>
+      </button> -->
 
       <button
         class="bg-none border-none ml-3 cursor-pointer hover:opacity-70"
@@ -132,7 +132,8 @@
       <p class="text-sm text-gray-500">Markdown Editor. Open Source Proyect</p>
     </div>
   </footer>
-  @if (showModal()) {
+
+  <app-modal [showModal]="showModal()">
     @switch (typeOfModal()) {
       @case ('Link') {
         <app-modal-url
@@ -153,13 +154,10 @@
         />
       }
       @case ('Table') {
-        <app-modal-table
-          (hideOrShowModal)="openModal($event, '')"
-          (modalValue)="addContentFromModal($event)"
-        />
+        <app-modal-table (modalValue)="addContentFromModal($event)" />
       }
     }
-  }
+  </app-modal>
 </div>
 
 <router-outlet />

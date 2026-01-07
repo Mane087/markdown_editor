@@ -19,6 +19,7 @@ import { ModalCodeComponent } from './components/modal-code/modal-code.component
 import { ModalImageComponent } from './components/modal-image/modal-image.component';
 import { ModalTableComponent } from './components/modal-table/modal-table.component';
 import { ShortcutsService } from './utils/services/shortcuts.service';
+import { ModalComponent } from './layouts/modal/modal.component';
 
 marked.setOptions({
   gfm: true,
@@ -51,6 +52,7 @@ marked.use({
     ModalImageComponent,
     ModalCodeComponent,
     ModalTableComponent,
+    ModalComponent,
   ],
   templateUrl: './app.component.html',
 })
@@ -95,7 +97,28 @@ export class AppComponent {
           run: () => this.addElement(icon.value, 'start'),
         }));
 
+      const fixedShortcuts = [
+        {
+          combo: 'ctrl+alt+a',
+          run: () => this.toLowerCaseOrUpper('lower'),
+        },
+        {
+          combo: 'ctrl+alt+u',
+          run: () => this.toLowerCaseOrUpper('upper'),
+        },
+
+        {
+          combo: 'ctrl+alt+p',
+          run: () => this.hideOrShowPreviewToggle(),
+        },
+        {
+          combo: 'ctrl+alt+f',
+          run: () => this.fullOrMinPreviewToggle(),
+        },
+      ];
+
       shortcuts.push(...shortcutHeadings);
+      shortcuts.push(...fixedShortcuts);
 
       this.shortcutsService.register(shortcuts);
     });
@@ -187,6 +210,8 @@ export class AppComponent {
   }
 
   openModal(value: boolean, typeModal: string) {
+    console.log(value, typeModal, 'VALORES EN FUNCION OPENMODAL');
+
     this.showModal.set(value);
     this.typeOfModal.set(typeModal);
   }
@@ -204,7 +229,17 @@ export class AppComponent {
   }
 
   addContentFromModal(value: string) {
-    const isInputEmpty = this.inputValue() == '' ? '' : '\n';
-    this.inputValue.set(this.inputValue() + isInputEmpty + value);
+    console.log('ADD CONTENT FROM MODAL');
+
+    if (value != '') {
+      console.log('ADD CONTENT FROM MODAL NO VACIO');
+
+      const isInputEmpty = this.inputValue() == '' ? '' : '\n';
+      this.inputValue.set(this.inputValue() + isInputEmpty + value);
+    }
+    console.log('ADD CONTENT FROM TRATO DE OCULTAR MODAL');
+
+    this.showModal.set(false);
+    this.typeOfModal.set('');
   }
 }

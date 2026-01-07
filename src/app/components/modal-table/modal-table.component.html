@@ -1,40 +1,46 @@
-<app-modal>
-  <div id="head-modal" class="w-full border-b border-[#cccc]">
-    <p class="text-2xl text-gray-700 font-medium">Table</p>
+<div id="head-modal" data-testid="modal-table-head" class="w-full border-b border-[#cccc]">
+  <p class="text-2xl text-gray-700 font-medium">Table</p>
+</div>
+<div id="body-modal" data-testid="modal-table-body" class="flex flex-col py-4">
+  <div class="flex flex-col justify-center py-2 w-3/4 h-max mx-auto">
+    <p>Columns:</p>
+    <input
+      data-testid="table-column"
+      type="number"
+      (input)="clickInput($event, 'column')"
+      class="w-full h-8 mx-auto rounded-md border border-[#cccc] focus:outline-none focus:ring-0 focus:border-gray-400 focus:border-2 px-2"
+    />
   </div>
-  <div id="body-modal" class="flex flex-col py-4">
-    <div class="flex flex-col justify-center py-2 w-3/4 h-max mx-auto">
-      <p>Columns:</p>
-      <input
-        type="number"
-        (click)="clickInput($event, 'column')"
-        class="w-full h-8 mx-auto rounded-md border border-[#cccc] focus:outline-none focus:ring-0 focus:border-gray-400 focus:border-2 px-2"
-      />
-    </div>
 
-    <div class="flex flex-col justify-center py-2 w-3/4 h-max mx-auto">
-      <p>Rows:</p>
-      <input
-        type="number"
-        (click)="clickInput($event, 'row')"
-        class="w-full h-8 rounded-md border border-[#cccc] focus:outline-none focus:ring-0 focus:border-gray-400 focus:border-2 px-2"
-      />
-    </div>
+  <div class="flex flex-col justify-center py-2 w-3/4 h-max mx-auto">
+    <p>Rows:</p>
+    <input
+      data-testid="table-row"
+      type="number"
+      (input)="clickInput($event, 'row')"
+      class="w-full h-8 rounded-md border border-[#cccc] focus:outline-none focus:ring-0 focus:border-gray-400 focus:border-2 px-2"
+    />
   </div>
-  <div id="footer-modal" class="mx-auto flex justify-between items-center w-1/2 h-fit">
-    <button
-      type="button"
-      (click)="saveModal()"
-      class="rounded-md border-none w-24 h-fit p-2 bg-gray-800 text-white text-base cursor-pointer hover:opacity-80 transition-opacity"
-    >
-      Agregar
-    </button>
-    <button
-      type="button"
-      (click)="closeModal()"
-      class="rounded-md border-none w-24 h-fit p-2 bg-gray-500 text-white text-base cursor-pointer hover:opacity-80 transition-opacity"
-    >
-      Cancelar
-    </button>
-  </div>
-</app-modal>
+</div>
+<div
+  id="footer-modal"
+  class="mx-auto flex justify-between items-center w-1/2 h-fit"
+  data-testid="modal-table-footer"
+>
+  <button
+    data-testid="table-save"
+    type="button"
+    (click)="saveModal()"
+    class="rounded-md border-none w-24 h-fit p-2 bg-gray-800 text-white text-base cursor-pointer hover:opacity-80 transition-opacity"
+  >
+    Agregar
+  </button>
+  <button
+    data-testid="table-cancel"
+    type="button"
+    (click)="closeModal()"
+    class="rounded-md border-none w-24 h-fit p-2 bg-gray-500 text-white text-base cursor-pointer hover:opacity-80 transition-opacity"
+  >
+    Cancelar
+  </button>
+</div>
