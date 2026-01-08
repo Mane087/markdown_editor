@@ -1,7 +1,7 @@
 <div class="w-full h-dvh mx-auto flex flex-col">
-  <header class="w-full h-fit px-5 py-3 flex justify-center items-center">
+  <header class="w-full h-[80px] px-5 py-3 flex items-center">
     <img src="/icons/logo_app.svg" alt="Markdown Editor" class="h-14 w-14 mr-4" />
-    <div class="w-full h-fit flex px-3 items-center">
+    <div class="w-3/4 h-full flex px-3 items-center">
       <ul class="list-none h-fit w-fit flex items-center gap-x-3">
         @for (icon of listIcons; track $index) {
           <li
@@ -95,6 +95,22 @@
         }
       </button>
     </div>
+    <div class="w-1/4 h-full flex items-center justify-end">
+      <button
+        title="Repository"
+        type="button"
+        class="flex items-center justify-center gap-x-2 p-2 border-none rounded-md bg-black hover:opacity-70 cursor-pointer"
+      >
+        <img src="/icons/github.svg" alt="GitHub" />
+        <a
+          href="https://github.com/Mane087/markdown_editor"
+          target="_blank"
+          rel="repositorio"
+          class="text-white font-medium text-base"
+          >GitHub</a
+        >
+      </button>
+    </div>
   </header>
   <div class="w-full h-5/6 flex px-5">
     @if (!fullOrMinPreview()) {
@@ -128,7 +144,7 @@
     }
   </div>
   <footer>
-    <div class="w-full h-12 flex justify-center items-center overflow-y-auto">
+    <div class="w-full h-12 flex flex-col justify-center items-center overflow-y-auto">
       <p class="text-sm text-gray-500">Markdown Editor. Open Source Proyect</p>
     </div>
   </footer>
