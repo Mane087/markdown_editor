@@ -9,16 +9,6 @@
       "eslint --max-warnings=0"
     ]
   },
-  "jest": {
-    "preset": "jest-preset-angular",
-    "setupFilesAfterEnv": [
-      "<rootDir>/setup-jest.ts"
-    ],
-    "testMatch": [
-      "<rootDir>/tests/**/*.spec.ts"
-    ],
-    "globalSetup": "jest-preset-angular/global-setup"
-  },
   "scripts": {
     "ng": "ng",
     "start": "ng serve",

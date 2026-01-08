@@ -34,15 +34,14 @@ export class ModalTableComponent {
       console.log(tableMarkdown, 'valor a emitir');
 
       this.modalValue.emit(tableMarkdown);
-      // this.hideOrShowModal.emit(false);
+      this.hideOrShowModal.emit(false);
     } else {
       alert('Please enter valid numbers for columns and rows.');
     }
   }
 
   closeModal() {
-    // this.hideOrShowModal.emit(false);
-    this.modalValue.emit('');
+    this.hideOrShowModal.emit(false);
   }
 
   clickInput(event: Event, type: 'column' | 'row') {
