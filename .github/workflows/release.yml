@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write  # REQUIRED to create tags & releases
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # important for tags
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Read version from package.json
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Check if tag already exists
+        run: |
+          if git rev-parse "v${{ steps.version.outputs.version }}" >/dev/null 2>&1; then
+            echo "Tag already exists, skipping release."
+            exit 0
+          fi
+          
+      - name: Check version change
+        run: |
+          git diff HEAD~1 HEAD -- package.json | grep version || exit 0
+
+
+      - name: Create git tag
+        run: |
+          git tag v${{ steps.version.outputs.version }}
+          git push origin v${{ steps.version.outputs.version }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: MD-EDITOR v${{ steps.version.outputs.version }}
+          enerate_release_notes: true
+          body: |
+            🚀 **MD-EDITOR v${{ steps.version.outputs.version }}**
+
+            - Initial stable release
+            - Markdown editor with preview
+            - Modals for links, images, code blocks & tables
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
