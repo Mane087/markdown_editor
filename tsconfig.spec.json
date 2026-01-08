@@ -6,5 +6,6 @@
     "outDir": "./out-tsc/spec",
     "types": ["jest", "node"]
   },
-  "include": ["src/**/*.spec.ts", "src/**/*.d.ts", "tests/**/*.spec.ts"]
+  "include": ["tests/**/*.spec.ts"],
+  "exclude": ["playwright", "e2e", "**/*.e2e-spec.ts"]
 }

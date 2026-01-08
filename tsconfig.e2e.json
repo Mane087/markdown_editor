@@ -6,5 +6,6 @@
     "target": "ES2022",
     "module": "ESNext"
   },
-  "include": ["e2e/**/*.ts"]
+  "include": ["e2e/**/*.ts"],
+  "exclude": ["node_modules", "dist", "test"]
 }

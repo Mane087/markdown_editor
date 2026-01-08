@@ -14,6 +14,9 @@
     "setupFilesAfterEnv": [
       "<rootDir>/setup-jest.ts"
     ],
+    "testMatch": [
+      "<rootDir>/tests/**/*.spec.ts"
+    ],
     "globalSetup": "jest-preset-angular/global-setup"
   },
   "scripts": {
@@ -24,7 +27,7 @@
     "prepare": "husky",
     "lint": "ng lint",
     "lint:fix": "ng lint --fix",
-    "test": "jest",
+    "test": "ng test",
     "test:watch": "jest --watchAll",
     "test:coverage": "jest --coverage",
     "e2e": "playwright test",
