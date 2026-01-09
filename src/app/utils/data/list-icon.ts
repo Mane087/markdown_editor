@@ -3,7 +3,7 @@ import type { AsideElement } from '../interfaces/aside-element';
 export const listIcons: AsideElement[] = [
   {
     title: 'Bold',
-    iconSrc: '/icons/bold.svg',
+    iconSrc: 'icons/bold.svg',
     iconAlt: 'Bold Icon',
     tag: '<b></b>',
     insert: 'between',
@@ -11,7 +11,7 @@ export const listIcons: AsideElement[] = [
   },
   {
     title: 'Italic',
-    iconSrc: '/icons/italic.svg',
+    iconSrc: 'icons/italic.svg',
     iconAlt: 'Italic Icon',
     tag: '<i></i>',
     insert: 'between',
@@ -19,7 +19,7 @@ export const listIcons: AsideElement[] = [
   },
   {
     title: 'Strikethrough',
-    iconSrc: '/icons/strikethrough.svg',
+    iconSrc: 'icons/strikethrough.svg',
     iconAlt: 'Strikethrough Icon',
     tag: '<s></s>',
     insert: 'between',
@@ -27,7 +27,7 @@ export const listIcons: AsideElement[] = [
   },
   {
     title: 'Quote',
-    iconSrc: '/icons/quote.svg',
+    iconSrc: 'icons/quote.svg',
     iconAlt: 'Quote Icon',
     tag: '>',
     insert: 'start',
@@ -35,7 +35,7 @@ export const listIcons: AsideElement[] = [
   },
   {
     title: 'List',
-    iconSrc: '/icons/list.svg',
+    iconSrc: 'icons/list.svg',
     iconAlt: 'List Icon',
     tag: '-',
     insert: 'start',
@@ -43,7 +43,7 @@ export const listIcons: AsideElement[] = [
   },
   {
     title: 'List Numeric',
-    iconSrc: '/icons/list-numeric.svg',
+    iconSrc: 'icons/list-numeric.svg',
     iconAlt: 'List Numeric Icon',
     tag: '1.',
     insert: 'start',
@@ -51,7 +51,7 @@ export const listIcons: AsideElement[] = [
   },
   {
     title: 'Horizontal Rule',
-    iconSrc: '/icons/line.svg',
+    iconSrc: 'icons/line.svg',
     iconAlt: 'Horizontal Rule Icon',
     tag: '---',
     insert: 'start',
@@ -59,7 +59,7 @@ export const listIcons: AsideElement[] = [
   },
   {
     title: 'Code Inline',
-    iconSrc: '/icons/code.svg',
+    iconSrc: 'icons/code.svg',
     iconAlt: 'Code Inline Icon',
     tag: '``',
     insert: 'between',
