@@ -25,6 +25,7 @@ El editor cuenta con un conjunto de botones interactivos que permiten insertar a
 Esto permite enfocarse en el contenido sin perder tiempo escribiendo sintaxis manualmente.
 
 ![menu_app](/public/imgs/menu_app.png)
+
 Puedes consultar el detalle completo de las funcionalidades disponibles en la sección de: [opciones del editor](/documentation/options_es.md).
 
 ## Atajos de teclado (Shortcuts)
