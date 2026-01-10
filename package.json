@@ -1,6 +1,6 @@
 {
   "name": "md-editor",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "lint-staged": {
     "*.{ts,html,css,scss,md,json}": [
       "prettier --write"
@@ -12,6 +12,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "build": "ng build",
     "build:gh": "ng build --base-href /markdown_editor/",
     "watch": "ng build --watch --configuration development",
     "prepare": "husky",
