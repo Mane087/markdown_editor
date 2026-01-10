@@ -25,6 +25,7 @@ The editor features a set of interactive buttons that allow you to automatically
 This allows you to focus on the content without wasting time writing syntax manually.
 
 ![menu_app](/public/imgs/menu_app.png)
+
 You can view the full details of the available features in the section: [editor options](/documentation/options_us.md).
 
 ## Shortcuts
