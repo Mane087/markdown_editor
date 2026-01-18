@@ -18,10 +18,10 @@ export const listIconsText: AsideElement[] = [
     combo: 'ctrl+alt+i',
   },
   {
-    title: 'Strikethrough',
+    title: 'Underlined',
     iconSrc: 'icons/strikethrough.svg',
-    iconAlt: 'Strikethrough Icon',
-    tag: '<s></s>',
+    iconAlt: 'Underlined Icon',
+    tag: '<u></u>',
     insert: 'between',
     combo: 'ctrl+alt+s',
   },
