@@ -1,4 +1,4 @@
-import type { Headings } from '../interfaces/headings';
+import type { Headings } from '../types/heading';
 
 export const ListHeadings: Headings[] = [
   { content: 'H1', value: '#', combo: 'ctrl+alt+1' },
