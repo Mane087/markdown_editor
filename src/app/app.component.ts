@@ -7,12 +7,13 @@ import { Component, effect, signal, computed, inject } from '@angular/core';
 import type { SafeHtml } from '@angular/platform-browser';
 import { DomSanitizer } from '@angular/platform-browser';
 
-import type { AsideElement, AsideElementModal } from './utils/interfaces/aside-element';
-import type { Headings } from './utils/interfaces/headings';
+import type { AsideElement, AsideElementModal } from './utils/types/button-option';
+import type { Headings } from './utils/types/heading';
 
-import { listIcons } from './utils/data/list-icon';
-import { ListHeadings } from './utils/data/headings';
-import { listIconsModal } from './utils/data/list-icons-modals';
+import { ListHeadings } from './utils/data/list-headings';
+import { listIconsText } from './utils/data/list-text-options';
+import { listIconsModal } from './utils/data/list-modal-options';
+import { listIconsOthers } from './utils/data/list-other-options';
 
 import { ModalUrlComponent } from './components/modal-url/modal-url.component';
 import { ModalCodeComponent } from './components/modal-code/modal-code.component';
@@ -20,6 +21,10 @@ import { ModalImageComponent } from './components/modal-image/modal-image.compon
 import { ModalTableComponent } from './components/modal-table/modal-table.component';
 import { ShortcutsService } from './utils/services/shortcuts.service';
 import { ModalComponent } from './layouts/modal/modal.component';
+import { alertExtension } from './utils/configs/marked-tips';
+import { SelectComponent } from './components/select/select.component';
+import type { Options } from './utils/types/option';
+import { listAlerts } from './utils/data/list-alerts';
 
 marked.setOptions({
   gfm: true,
@@ -42,6 +47,7 @@ marked.use({
     },
   },
 });
+marked.use({ extensions: [alertExtension] });
 
 @Component({
   selector: 'app-root',
@@ -53,8 +59,10 @@ marked.use({
     ModalCodeComponent,
     ModalTableComponent,
     ModalComponent,
+    SelectComponent,
   ],
   templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css'],
 })
 export class AppComponent {
   inputValue = signal<string>('');
@@ -64,9 +72,11 @@ export class AppComponent {
   showModal = signal<boolean>(false);
   typeOfModal = signal<string>('');
 
-  listIcons: AsideElement[] = [];
+  listIconsText: AsideElement[] = [];
+  listIconsOthers: AsideElement[] = [];
   listIconsModal: AsideElementModal[] = [];
   listHeadings: Headings[] = [];
+  listAlerts: Options[] = [];
 
   private sanitizer = inject(DomSanitizer);
   private shortcutsService = inject(ShortcutsService);
@@ -76,14 +86,28 @@ export class AppComponent {
     return this.sanitizer.bypassSecurityTrustHtml(rawHtml);
   });
 
+  lineNumbers = computed<number[]>(() => {
+    const lines = this.inputValue().split('\n').length;
+    return Array.from({ length: lines }, (_, i) => i + 1);
+  });
+
   constructor() {
     effect(() => {
-      this.listIcons = listIcons;
+      this.listIconsText = listIconsText;
+      this.listIconsOthers = listIconsOthers;
       this.listIconsModal = listIconsModal;
       this.listHeadings = ListHeadings;
+      this.listAlerts = listAlerts;
       window.addEventListener('keydown', this.handleKey.bind(this));
 
-      const shortcuts = this.listIcons
+      const shortcuts = this.listIconsText
+        .filter((icon) => icon.combo)
+        .map((icon) => ({
+          combo: icon.combo!,
+          run: () => this.addElement(icon.tag, icon.insert),
+        }));
+
+      const shortcutsOthers = this.listIconsOthers
         .filter((icon) => icon.combo)
         .map((icon) => ({
           combo: icon.combo!,
@@ -117,8 +141,7 @@ export class AppComponent {
         },
       ];
 
-      shortcuts.push(...shortcutHeadings);
-      shortcuts.push(...fixedShortcuts);
+      shortcuts.push(...shortcutHeadings, ...fixedShortcuts, ...shortcutsOthers);
 
       this.shortcutsService.register(shortcuts);
     });
@@ -138,12 +161,6 @@ export class AppComponent {
   }
 
   addElement(tag: string, insert: 'start' | 'between' | '') {
-    if (this.selectedText() === '') {
-      const breakLine = this.inputValue() != '' ? '\n' : '';
-      this.inputValue.set(this.inputValue() + breakLine + tag);
-      return;
-    }
-
     const textarea = document.querySelector('textarea') as HTMLTextAreaElement;
     const start = textarea.selectionStart ?? 0;
     const end = textarea.selectionEnd ?? 0;
@@ -153,7 +170,7 @@ export class AppComponent {
     const after = this.inputValue().slice(end);
 
     let newValue = '';
-    const space = before != '' ? '\n' : '';
+    const space = before != '' ? '\n\n' : '';
 
     switch (insert) {
       case 'start':
@@ -172,7 +189,6 @@ export class AppComponent {
         newValue = this.inputValue() + tag;
         break;
     }
-
     this.inputValue.set(newValue);
     this.selectedText.set('');
   }
@@ -228,18 +244,18 @@ export class AppComponent {
     }
   }
 
-  addContentFromModal(value: string) {
-    console.log('ADD CONTENT FROM MODAL');
+  downloadMarkdown() {
+    const content = this.inputValue();
+    const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
 
-    if (value != '') {
-      console.log('ADD CONTENT FROM MODAL NO VACIO');
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'document.md';
+    a.click();
 
-      const isInputEmpty = this.inputValue() == '' ? '' : '\n';
-      this.inputValue.set(this.inputValue() + isInputEmpty + value);
-    }
-    console.log('ADD CONTENT FROM TRATO DE OCULTAR MODAL');
-
-    this.showModal.set(false);
-    this.typeOfModal.set('');
+    URL.revokeObjectURL(url);
   }
+
+  // downloadPdf() {}
 }

@@ -1,5 +1,5 @@
 import { Component, effect, output, signal } from '@angular/core';
-import type { Languages } from '../../utils/interfaces/lenguages';
+import type { Languages } from '../../utils/types/lenguage';
 import { listLanguages } from '../../utils/data/list-lenguages';
 
 @Component({

@@ -15,6 +15,8 @@ html ::selection {
 .markdown-body {
   background-color: white;
   color: #24292f;
+  word-break: break-word;
+  white-space: normal;
 }
 
 .markdown-body table {
@@ -40,4 +42,118 @@ html ::selection {
 
 .markdown-body tr:nth-child(even) {
   background-color: #f9fafb;
+}
+
+.markdown-body blockquote {
+  color: #797979;
+  padding: 5px 10px;
+  border-left: 4px solid #a0a0a0;
+  text-align: start;
+  height: fit-content;
+}
+
+.markdown-body code {
+  background-color: #f3f4f6;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+/* STYLES for alerts */
+.md-alert {
+  border-left: 5px solid;
+  padding: 12px 12px;
+  margin: 16px 0;
+  border-radius: 8px;
+  background: #f9f9f9;
+  color: #bdbdbd;
+}
+
+.md-alert-header {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.md-alert-content {
+  line-height: 1.5;
+}
+
+/* NOTE */
+.md-alert-note {
+  border-color: #3b82f6;
+}
+.md-alert-note .md-alert-title {
+  color: #3b82f6;
+}
+/* TIP */
+.md-alert-tip {
+  border-color: #22c55e;
+}
+.md-alert-tip .md-alert-title {
+  color: #22c55e;
+}
+/* IMPORTANT */
+.md-alert-important {
+  border-color: #a855f7;
+}
+.md-alert-important .md-alert-title {
+  color: #a855f7;
+}
+/* WARNING */
+.md-alert-warning {
+  border-color: #facc15;
+}
+.md-alert-warning .md-alert-title {
+  color: #facc15;
+}
+/* CAUTION */
+.md-alert-caution {
+  border-color: #ef4444;
+}
+.md-alert-caution .md-alert-title {
+  color: #ef4444;
+}
+
+.md-alert,
+table {
+  page-break-inside: avoid;
+}
+
+pre,
+blockquote {
+  page-break-inside: auto;
+}
+
+@media print {
+  .markdown-body {
+    max-width: none !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+  }
+
+  pre,
+  code {
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+  }
+
+  h1,
+  h2,
+  h3 {
+    page-break-after: avoid;
+  }
+
+  p {
+    page-break-inside: auto;
+  }
+
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+  }
 }

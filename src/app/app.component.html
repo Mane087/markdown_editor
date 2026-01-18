@@ -1,11 +1,11 @@
 <div class="w-full h-dvh mx-auto flex flex-col">
-  <header class="w-full h-[80px] px-5 py-3 flex items-center">
-    <img src="icons/logo_app.svg" alt="Markdown Editor" class="h-14 w-14 mr-4" />
-    <div class="w-3/4 h-full flex px-3 items-center">
-      <ul class="list-none h-fit w-fit flex items-center gap-x-3">
-        @for (icon of listIcons; track $index) {
+  <header class="w-full h-[8%] px-5 py-3 flex items-center">
+    <img src="icons/logo_app.svg" alt="Markdown Editor" class="h-12 w-12 mr-3" />
+    <nav class="w-3/4 h-full flex px-3 items-center">
+      <ul id="options-list-text" class="options-list">
+        @for (icon of listIconsText; track $index) {
           <li
-            class="cursor-pointer hover:opacity-70"
+            class="item-list"
             [title]="icon.title"
             (click)="addElement(icon.tag, icon.insert)"
             (keydown.enter)="addElement(icon.tag, icon.insert)"
@@ -15,42 +15,52 @@
             <img [src]="icon.iconSrc" [alt]="icon.iconAlt" />
           </li>
         }
+        <button class="button" title="Lowercase" (click)="toLowerCaseOrUpper('lower')">
+          <img src="icons/lowercase.svg" alt="" class="w-4 h-4" />
+        </button>
+
+        <button class="button" title="Uppercase" (click)="toLowerCaseOrUpper('upper')">
+          <img src="icons/uppercase.svg" alt="Redo" class="w-5 h-5" />
+        </button>
+
+        <select
+          name="select-headings"
+          id="headings"
+          class="w-fit cursor-pointer text-white hover:opacity-70"
+          title="Headings"
+          (change)="onHeadingChange($event)"
+        >
+          <option value="" selected hidden>H#</option>
+          @for (heading of listHeadings; track $index) {
+            <option [value]="heading.value">{{ heading.content }}</option>
+          }
+        </select>
       </ul>
-
-      <button
-        class="bg-none border-none mx-3 cursor-pointer hover:opacity-70"
-        title="Lowercase"
-        (click)="toLowerCaseOrUpper('lower')"
-      >
-        <img src="icons/lowercase.svg" alt="" class="w-4 h-4" />
-      </button>
-
-      <button
-        class="bg-none border-none mr-3 cursor-pointer hover:opacity-70"
-        title="Uppercase"
-        (click)="toLowerCaseOrUpper('upper')"
-      >
-        <img src="icons/uppercase.svg" alt="Redo" class="w-5 h-5" />
-      </button>
-
-      <select
-        name="select-headings"
-        id="headings"
-        class="w-fit cursor-pointer text-white mr-3 hover:opacity-70"
-        title="Headings"
-        (change)="onHeadingChange($event)"
-      >
-        <option value="" selected hidden>H#</option>
-        @for (heading of listHeadings; track $index) {
-          <option [value]="heading.value">{{ heading.content }}</option>
+      <ul id="options-list-others" class="options-list">
+        @for (icon of listIconsOthers; track $index) {
+          <li
+            class="item-list"
+            [title]="icon.title"
+            (click)="addElement(icon.tag, icon.insert)"
+            (keydown.enter)="addElement(icon.tag, icon.insert)"
+            (keydown.space)="addElement(icon.tag, icon.insert)"
+            tabindex="0"
+          >
+            <img [src]="icon.iconSrc" [alt]="icon.iconAlt" />
+          </li>
         }
-      </select>
-
-      <ul class="list-none flex items-center gap-x-3">
+        <app-select
+          [options]="listAlerts"
+          defaultOption="icons/alert.svg"
+          titleSelect="Alerts"
+          (selection)="addElement($event, 'start')"
+        />
+      </ul>
+      <ul id="options-list-modals" class="options-list">
         @for (icon of listIconsModal; track $index) {
           <li
             [attr.data-testid]="icon.id"
-            class="cursor-pointer hover:opacity-70"
+            class="item-list"
             [title]="icon.title"
             (click)="openModal(true, icon.title)"
             (keydown.enter)="openModal(true, icon.title)"
@@ -62,16 +72,24 @@
         }
       </ul>
 
-      <!-- <button class="bg-none border-none ml-3 cursor-pointer hover:opacity-70" title="Download MD">
+      <button
+        class="bg-none border-none ml-3 cursor-pointer hover:opacity-70"
+        title="Download MD"
+        (click)="downloadMarkdown()"
+      >
         <img src="/icons/download_file.svg" alt="Redo" class="w-6 h-6" />
       </button>
 
-      <button class="bg-none border-none ml-3 cursor-pointer hover:opacity-70" title="Download PDF">
+      <!-- <button
+        class="bg-none border-none ml-3 cursor-pointer hover:opacity-70"
+        title="Download PDF"
+        (click)="downloadPdf()"
+      >
         <img src="/icons/pdf_file.svg" alt="Redo" class="w-6 h-6" />
       </button> -->
 
       <button
-        class="bg-none border-none ml-3 cursor-pointer hover:opacity-70"
+        class="button ml-2"
         [title]="hideOrShowPreview() ? 'Hide Preview' : 'Show Preview'"
         (click)="hideOrShowPreviewToggle()"
       >
@@ -83,7 +101,7 @@
       </button>
 
       <button
-        class="bg-none border-none ml-3 cursor-pointer hover:opacity-70"
+        class="button ml-2"
         [title]="!fullOrMinPreview() ? 'Full Preview' : 'Min Preview'"
         (click)="fullOrMinPreviewToggle()"
         [disabled]="!hideOrShowPreview()"
@@ -94,7 +112,7 @@
           <img src="icons/min_preview.svg" alt="close_eye" class="w-6 h-6" />
         }
       </button>
-    </div>
+    </nav>
     <div class="w-1/4 h-full flex items-center justify-end">
       <button
         title="Repository"
@@ -112,7 +130,7 @@
       </button>
     </div>
   </header>
-  <div class="w-full h-5/6 flex px-5">
+  <main class="w-full h-[85%] flex">
     @if (!fullOrMinPreview()) {
       <div
         [ngClass]="{
@@ -121,9 +139,18 @@
         }"
         class="h-full bg-white flex border-r border-[#cccc] overflow-hidden"
       >
+        <div
+          class="w-[5%] h-full mr-2 border-r border-[#cccc] flex flex-col items-center gap-y-1 py-5"
+        >
+          @for (lineNumber of lineNumbers(); track lineNumber) {
+            <span class="w-full text-right pr-2 text-sm text-gray-400 select-none leading-6">
+              {{ lineNumber }}
+            </span>
+          }
+        </div>
         <textarea
           data-testid="editor-textarea"
-          class="w-full h-full p-5 text-left resize-none outline-none border-none overflow-y-auto"
+          class="w-[95%] h-full p-5 text-left resize-none outline-none border-none overflow-y-auto"
           (input)="onInput($event)"
           [value]="inputValue()"
           (select)="onSelect($event)"
@@ -139,12 +166,14 @@
         }"
         class="w-1/2 h-full bg-white p-5 overflow-y-auto markdown-body"
       >
-        <div [innerHTML]="previewHtml()"></div>
+        <div #previewRef class="markdown-body">
+          <div [innerHTML]="previewHtml()"></div>
+        </div>
       </div>
     }
-  </div>
-  <footer>
-    <div class="w-full h-12 flex flex-col justify-center items-center overflow-y-auto">
+  </main>
+  <footer class="h-[7%]">
+    <div class="w-full h-full flex flex-col justify-center items-center overflow-y-auto">
       <p class="text-sm text-gray-500">Markdown Editor. Open Source Proyect</p>
     </div>
   </footer>
@@ -154,23 +183,26 @@
       @case ('Link') {
         <app-modal-url
           (hideOrShowModal)="openModal($event, '')"
-          (modalValue)="addContentFromModal($event)"
+          (modalValue)="addElement($event, 'start')"
         />
       }
       @case ('Image') {
         <app-modal-image
           (hideOrShowModal)="openModal($event, '')"
-          (modalValue)="addContentFromModal($event)"
+          (modalValue)="addElement($event, 'start')"
         />
       }
       @case ('Bloc Code') {
         <app-modal-code
           (hideOrShowModal)="openModal($event, '')"
-          (modalValue)="addContentFromModal($event)"
+          (modalValue)="addElement($event, 'start')"
         />
       }
       @case ('Table') {
-        <app-modal-table (modalValue)="addContentFromModal($event)" />
+        <app-modal-table
+          (modalValue)="addElement($event, 'start')"
+          (hideOrShowModal)="openModal($event, '')"
+        />
       }
     }
   </app-modal>
