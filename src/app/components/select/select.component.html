@@ -1,0 +1,33 @@
+<div class="relative w-fit h-fit">
+  <!-- Selected value -->
+  <button
+    type="button"
+    [title]="titleSelect()"
+    class="w-full h-max flex items-center bg-none cursor-pointer"
+    (click)="toggleDropdown()"
+  >
+    <img [src]="defaultOption()" alt="icon-default" class="w-5 h-5" />
+    <img src="icons/down.svg" alt="icon-default" class="w-5 h-5" />
+  </button>
+
+  @if (isOpen()) {
+    <ul
+      class="absolute w-max top-full left-0 right-0 bg-[#343434] border border-[#ccc] rounded-lg mt-1 z-50 overflow-hidden"
+      (mouseleave)="close()"
+      tabindex="0"
+    >
+      @for (option of options(); track $index) {
+        <li
+          class="flex items-center gap-x-2 px-2.5 py-2 cursor-pointer text-white hover:bg-[#4b4b4b] transition-all ease-in-out"
+          (click)="selectOption(option)"
+          (keydown.enter)="selectOption(option)"
+          (keydown.space)="selectOption(option)"
+          tabindex="0"
+        >
+          <img [src]="option.icon" alt="icon" class="w-5 h-5" />
+          <span>{{ option.label }}</span>
+        </li>
+      }
+    </ul>
+  }
+</div>
