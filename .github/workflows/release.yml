@@ -56,9 +56,10 @@ jobs:
           body: |
             🚀 **MD-EDITOR v${{ steps.version.outputs.version }}**
 
-            - Initial stable release
-            - Markdown editor with preview
-            - Modals for links, images, code blocks & tables
+            - Intregacion con agentes de IA
+            - Modificacion de README
+            - Modificacion de licencia
+            - Se agregaron archivos como code_of_conduct, security y contributing
 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
