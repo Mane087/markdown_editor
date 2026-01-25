@@ -56,10 +56,10 @@ jobs:
           body: |
             🚀 **MD-EDITOR v${{ steps.version.outputs.version }}**
 
-            - Intregacion con agentes de IA
-            - Modificacion de README
-            - Modificacion de licencia
-            - Se agregaron archivos como code_of_conduct, security y contributing
+            - Nuevas skills para agentes 
+            - Se agrego la opcion de cargar un archivo md
+            - Se agrego un buscador
+            - Se optimizaron y mejeraron algunas caracteristicas del proyecto
 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
