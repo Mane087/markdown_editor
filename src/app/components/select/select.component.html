@@ -16,7 +16,7 @@
       (mouseleave)="close()"
       tabindex="0"
     >
-      @for (option of options(); track $index) {
+      @for (option of options(); track option.value) {
         <li
           class="flex items-center gap-x-2 px-2.5 py-2 cursor-pointer text-white hover:bg-[#4b4b4b] transition-all ease-in-out"
           (click)="selectOption(option)"

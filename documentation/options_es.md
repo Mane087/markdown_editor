@@ -13,5 +13,7 @@
 - Linea de codigo (resaltado) `ctrl+alt+c`
 - Lista de Alertas
 - Descargar archivo .md
+- Cargar archivo .md
 - Mostrar/Ocultar vista previa `ctrl+alt+p`
 - Agrandar/Minimizar vista previa `ctrl+alt+f`
+- Buscador global

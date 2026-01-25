@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import type { Shortcut } from '../types/shortcut';
+import type { Shortcut } from '../utils/types/shortcut';
 
 @Injectable({
   providedIn: 'root',

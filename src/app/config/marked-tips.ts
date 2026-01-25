@@ -1,5 +1,6 @@
+import DOMPurify from 'dompurify';
 import { marked } from 'marked';
-import type { Alert } from '../types/alert';
+import type { Alert } from '../utils/types/alert';
 
 export const alertExtension = {
   name: 'alert',
@@ -25,13 +26,17 @@ export const alertExtension = {
   },
 
   renderer(token: Alert): string {
+    const inlineHtml = marked.parseInline(token.text, { async: false }) as string;
+    const sanitizedText = DOMPurify.sanitize(inlineHtml, {
+      USE_PROFILES: { html: true },
+    });
     return `
     <div class="md-alert md-alert-${token.alertType}">
     <div class="md-alert-header">
         <strong class="md-alert-title">${token.alertType.toUpperCase()}</strong>
     </div>
     <div class="md-alert-content">
-        ${marked.parseInline(token.text)}
+        ${sanitizedText}
     </div>
     </div>`;
   },

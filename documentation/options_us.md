@@ -13,5 +13,7 @@
 - Code inline (highlighted) `ctrl+alt+c`
 - List of Alerts
 - Download .md file
+- Upload .md file
 - Hide/Shoe preview `ctrl+alt+p`
 - Full/Min preview `ctrl+alt+f`
+- Global search

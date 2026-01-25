@@ -72,12 +72,19 @@
         }
       </ul>
 
-      <button
-        class="bg-none border-none ml-3 cursor-pointer hover:opacity-70"
-        title="Download MD"
-        (click)="downloadMarkdown()"
-      >
+      <button class="button ml-2" title="Download MD" (click)="downloadMarkdown()">
         <img src="icons/download_file.svg" alt="Redo" class="w-6 h-6" />
+      </button>
+
+      <input
+        #fileInput
+        type="file"
+        class="hidden"
+        accept=".md,.txt,text/markdown,text/plain"
+        (change)="onFileUpload($event)"
+      />
+      <button class="button ml-2" title="Upload file" type="button" (click)="fileInput.click()">
+        <img src="icons/upload.svg" alt="Upload" class="w-6 h-6" />
       </button>
 
       <!-- <button
@@ -113,7 +120,16 @@
         }
       </button>
     </nav>
-    <div class="w-1/4 h-full flex items-center justify-end">
+    <div class="w-1/4 h-full flex items-center justify-end gap-x-3">
+      <div class="flex items-center gap-x-2">
+        <input
+          type="search"
+          placeholder="Search"
+          class="h-9 w-50 px-3 rounded-lg border border-gray-300 text-sm outline-none bg-white placeholder:text-gray-300"
+          (input)="onSearchChange($event)"
+          (keydown.enter)="findNextMatch()"
+        />
+      </div>
       <button
         title="Repository"
         type="button"
@@ -130,7 +146,7 @@
       </button>
     </div>
   </header>
-  <main class="w-full h-[85%] flex">
+  <main class="w-full h-[85%] flex px-4">
     @if (!fullOrMinPreview()) {
       <div
         [ngClass]="{
@@ -140,17 +156,21 @@
         class="h-full bg-white flex border-r border-[#cccc] overflow-hidden"
       >
         <div
-          class="w-[5%] h-full mr-2 border-r border-[#cccc] flex flex-col items-center gap-y-1 py-5"
+          #lineNumber
+          id="lineNumber"
+          class="w-[5%] h-full border-r border-[#cccc] flex flex-col gap-y-1 items-center pt-5 overflow-y-hidden"
         >
           @for (lineNumber of lineNumbers(); track lineNumber) {
-            <span class="w-full text-right pr-2 text-sm text-gray-400 select-none leading-6">
+            <span class="w-full text-center text-sm text-gray-400 select-none">
               {{ lineNumber }}
             </span>
           }
         </div>
         <textarea
+          #editorTextarea
           data-testid="editor-textarea"
           class="w-[95%] h-full p-5 text-left resize-none outline-none border-none overflow-y-auto"
+          (scroll)="syncScroll()"
           (input)="onInput($event)"
           [value]="inputValue()"
           (select)="onSelect($event)"
@@ -178,7 +198,7 @@
     </div>
   </footer>
 
-  <app-modal [showModal]="showModal()">
+  <app-modal [showModal]="showModal()" (requestClose)="openModal(false, '')">
     @switch (typeOfModal()) {
       @case ('Link') {
         <app-modal-url

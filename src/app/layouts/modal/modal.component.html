@@ -1,11 +1,18 @@
 @if (showModal()) {
-  <div class="fixed inset-0 z-10 bg-[#00000050] flex justify-center items-center"></div>
+  <div
+    class="fixed inset-0 z-10 bg-[#00000050] flex justify-center items-center"
+    aria-hidden="true"
+  ></div>
   <div class="fixed inset-0 z-20 flex justify-center items-center">
     <div
+      #modalSurface
       [ngClass]="{
         block: showModal(),
         hidden: !showModal(),
       }"
+      role="dialog"
+      aria-modal="true"
+      tabindex="-1"
       data-testid="modal-surface"
       class="bg-white p-6 rounded-xl shadow-lg min-w-[500px] max-w-[900px] min-h-min max-h-max overflow-y-auto"
     >
