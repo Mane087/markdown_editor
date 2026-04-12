@@ -83,7 +83,7 @@
         accept=".md,.txt,text/markdown,text/plain"
         (change)="onFileUpload($event)"
       />
-      <button class="button ml-2" title="Upload file" type="button" (click)="fileInput.click()">
+      <button class="button ml-2" title="Upload MD" type="button" (click)="fileInput.click()">
         <img src="icons/upload.svg" alt="Upload" class="w-6 h-6" />
       </button>
 
@@ -144,6 +144,26 @@
           >GitHub</a
         >
       </button>
+      <label
+        class="theme-switch"
+        [class.theme-switch-dark]="darkEditorTheme()"
+        title="Cambiar tema del editor y preview"
+      >
+        @if (!darkEditorTheme()) {
+          <img src="icons/light.svg" alt="Modo claro activo" class="theme-switch__icon" />
+        } @else {
+          <img src="icons/dark.svg" alt="Modo oscuro activo" class="theme-switch__icon" />
+        }
+        <input
+          type="checkbox"
+          [checked]="darkEditorTheme()"
+          (change)="toggleEditorTheme()"
+          aria-label="Alternar modo oscuro del editor y preview"
+        />
+        <span class="theme-switch__track">
+          <span class="theme-switch__thumb"></span>
+        </span>
+      </label>
     </div>
   </header>
   <main class="w-full h-[85%] flex px-4">
@@ -152,16 +172,17 @@
         [ngClass]="{
           'w-full rounded-2xl': !hideOrShowPreview(),
           'w-1/2 rounded-l-2xl': hideOrShowPreview(),
+          'editor-panel-dark': darkEditorTheme(),
         }"
-        class="h-full bg-white flex border-r border-[#cccc] overflow-hidden"
+        class="editor-panel h-full flex border-r border-[#cccc] overflow-hidden"
       >
         <div
           #lineNumber
           id="lineNumber"
-          class="w-[5%] h-full border-r border-[#cccc] flex flex-col gap-y-1 items-center pt-5 overflow-y-hidden"
+          class="line-number-panel w-[5%] h-full border-r border-[#cccc] flex flex-col gap-y-1 items-center pt-5 overflow-y-hidden"
         >
           @for (lineNumber of lineNumbers(); track lineNumber) {
-            <span class="w-full text-center text-sm text-gray-400 select-none">
+            <span class="line-number w-full text-center text-sm select-none">
               {{ lineNumber }}
             </span>
           }
@@ -169,7 +190,7 @@
         <textarea
           #editorTextarea
           data-testid="editor-textarea"
-          class="w-[95%] h-full p-5 text-left resize-none outline-none border-none overflow-y-auto"
+          class="editor-textarea w-[95%] h-full p-5 text-left resize-none outline-none border-none overflow-y-auto"
           (scroll)="syncScroll()"
           (input)="onInput($event)"
           [value]="inputValue()"
@@ -183,8 +204,9 @@
         [ngClass]="{
           'w-full rounded-2xl': fullOrMinPreview(),
           'w-1/2 rounded-r-2xl': !fullOrMinPreview(),
+          'preview-panel-dark': darkEditorTheme(),
         }"
-        class="w-1/2 h-full bg-white p-5 overflow-y-auto markdown-body"
+        class="preview-panel w-1/2 h-full p-5 overflow-y-auto markdown-body"
       >
         <div #previewRef class="markdown-body">
           <div [innerHTML]="previewHtml()"></div>

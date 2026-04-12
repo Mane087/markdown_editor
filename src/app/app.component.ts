@@ -63,6 +63,7 @@ export class AppComponent {
   selectedText = signal<string>('');
   hideOrShowPreview = signal<boolean>(true);
   fullOrMinPreview = signal<boolean>(false);
+  darkEditorTheme = signal<boolean>(false);
   showModal = signal<boolean>(false);
   typeOfModal = signal<string>('');
   searchQuery = signal<string>('');
@@ -305,6 +306,10 @@ export class AppComponent {
 
   fullOrMinPreviewToggle() {
     this.fullOrMinPreview.set(!this.fullOrMinPreview());
+  }
+
+  toggleEditorTheme() {
+    this.darkEditorTheme.set(!this.darkEditorTheme());
   }
 
   onHeadingChange(event: Event) {
