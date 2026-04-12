@@ -75,6 +75,23 @@ describe('AppComponent', () => {
     expect(component.inputValue()).toBe('<b>hello</b>');
   });
 
+  it('should wrap selected text with inline code markers', () => {
+    component.inputValue.set('hello');
+    component.selectedText.set('ell');
+
+    fixture.detectChanges();
+
+    const textarea = fixture.nativeElement.querySelector('textarea') as HTMLTextAreaElement;
+
+    textarea.value = 'hello';
+    textarea.selectionStart = 1;
+    textarea.selectionEnd = 4;
+
+    component.addElement('``', 'between');
+
+    expect(component.inputValue()).toBe('h`ell`o');
+  });
+
   it('should wrap selected text to uppercase', () => {
     component.inputValue.set('hello');
     component.selectedText.set('hello');
