@@ -264,6 +264,13 @@ export class AppComponent {
           const openTag = tag.replace(/<\/[a-z]+>.*$/, ''); // <b>
           const closeTag = tag.match(/<\/[a-z]+>/)?.[0] ?? ''; // </b>
           newValue = before + openTag + selected + closeTag + after;
+        } else if (tag.length > 1 && tag.length % 2 === 0) {
+          const middle = tag.length / 2;
+          const openTag = tag.slice(0, middle);
+          const closeTag = tag.slice(middle);
+          newValue = before + openTag + selected + closeTag + after;
+        } else {
+          newValue = before + tag + selected + after;
         }
         break;
       }
