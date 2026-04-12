@@ -4,7 +4,7 @@
 
 ---
 
-[ES](/README.md)/[US](/documentation//doc.md)
+[ES](/README.md)/[US](/documentation/doc.md)
 
 # Descripcion
 
