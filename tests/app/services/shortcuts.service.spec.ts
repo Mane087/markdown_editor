@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { ShortcutsService } from '../../../src/app/utils/services/shortcuts.service';
+
+import { ShortcutsService } from '../../../src/app/services/shortcuts.service';
 import type { Shortcut } from '../../../src/app/utils/types/shortcut';
 
 function createKeyboardEvent(key: string, options: Partial<KeyboardEvent> = {}): KeyboardEvent {

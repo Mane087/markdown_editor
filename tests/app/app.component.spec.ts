@@ -1,13 +1,17 @@
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
+
 import { AppComponent } from '../../src/app/app.component';
-import { ShortcutsService } from '../../src/app/utils/services/shortcuts.service';
-import { DomSanitizer } from '@angular/platform-browser';
+import { ShortcutsService } from '../../src/app/services/shortcuts.service';
 
 describe('AppComponent', () => {
   let component: AppComponent;
   let fixture: ComponentFixture<AppComponent>;
   let shortcutsService: jest.Mocked<ShortcutsService>;
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -18,12 +22,6 @@ describe('AppComponent', () => {
           useValue: {
             register: jest.fn(),
             handle: jest.fn().mockReturnValue(false),
-          },
-        },
-        {
-          provide: DomSanitizer,
-          useValue: {
-            bypassSecurityTrustHtml: jest.fn((v) => v),
           },
         },
       ],
@@ -55,7 +53,7 @@ describe('AppComponent', () => {
 
     component.addElement('<b></b>', 'between');
 
-    expect(component.inputValue()).toBe('hello\n<b></b>');
+    expect(component.inputValue()).toBe('<b></b>hello');
   });
 
   it('should wrap selected text when insert is between', () => {
@@ -150,7 +148,7 @@ describe('AppComponent', () => {
     } as unknown as Event;
 
     component.onHeadingChange(event);
-    expect(component.inputValue()).toBe('hello\n###');
+    expect(component.inputValue()).toBe('### hello');
   });
 
   it('should show modal and insert type of modal', () => {
@@ -173,7 +171,131 @@ describe('AppComponent', () => {
 
     const value = '[Google](https://google.com)';
 
-    component.addContentFromModal(value);
-    expect(component.inputValue()).toBe('hello\n[Google](https://google.com)');
+    component.addElement(value, 'start');
+    expect(component.inputValue()).toBe('[Google](https://google.com) hello');
+  });
+
+  it('should open save picker and write markdown file when supported', async () => {
+    component.inputValue.set('# Hello');
+
+    const write = jest.fn().mockResolvedValue(undefined);
+    const close = jest.fn().mockResolvedValue(undefined);
+    const createWritable = jest.fn().mockResolvedValue({ write, close });
+    const showSaveFilePicker = jest.fn().mockResolvedValue({ createWritable });
+
+    Object.defineProperty(window, 'showSaveFilePicker', {
+      configurable: true,
+      writable: true,
+      value: showSaveFilePicker,
+    });
+
+    await component.downloadMarkdown();
+
+    expect(showSaveFilePicker).toHaveBeenCalledWith({
+      suggestedName: 'document.md',
+      excludeAcceptAllOption: true,
+      types: [
+        {
+          description: 'Markdown files',
+          accept: {
+            'text/markdown': ['.md'],
+          },
+        },
+      ],
+    });
+    expect(createWritable).toHaveBeenCalled();
+    expect(write).toHaveBeenCalledTimes(1);
+    expect(write.mock.calls[0][0]).toBeTruthy();
+    expect(close).toHaveBeenCalled();
+  });
+
+  it('should fallback to browser download when save picker is unavailable', async () => {
+    component.inputValue.set('# Hello');
+
+    Object.defineProperty(window, 'showSaveFilePicker', {
+      configurable: true,
+      writable: true,
+      value: undefined,
+    });
+
+    await component.downloadMarkdown();
+
+    expect(component.showModal()).toBe(true);
+    expect(component.typeOfModal()).toBe('Save File');
+    expect(component.suggestedMarkdownFileName()).toBe('document.md');
+  });
+
+  it('should not trigger fallback when user cancels save picker', async () => {
+    component.inputValue.set('# Hello');
+
+    const showSaveFilePicker = jest
+      .fn()
+      .mockRejectedValue(new DOMException('The user aborted a request.', 'AbortError'));
+
+    Object.defineProperty(window, 'showSaveFilePicker', {
+      configurable: true,
+      writable: true,
+      value: showSaveFilePicker,
+    });
+
+    const createObjectUrl = jest.fn().mockReturnValue('blob:test');
+
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      writable: true,
+      value: createObjectUrl,
+    });
+
+    await component.downloadMarkdown();
+
+    expect(showSaveFilePicker).toHaveBeenCalled();
+    expect(createObjectUrl).not.toHaveBeenCalled();
+  });
+
+  it('should open custom save modal when save picker fails', async () => {
+    const showSaveFilePicker = jest
+      .fn()
+      .mockRejectedValue(new DOMException('Picker unavailable', 'SecurityError'));
+
+    Object.defineProperty(window, 'showSaveFilePicker', {
+      configurable: true,
+      writable: true,
+      value: showSaveFilePicker,
+    });
+
+    await component.downloadMarkdown();
+
+    expect(component.showModal()).toBe(true);
+    expect(component.typeOfModal()).toBe('Save File');
+  });
+
+  it('should download markdown with custom filename', () => {
+    component.inputValue.set('# Hello');
+
+    const click = jest.fn();
+    const anchor = { href: '', download: '', click } as unknown as HTMLAnchorElement;
+    const createElementSpy = jest.spyOn(document, 'createElement').mockReturnValue(anchor);
+    const createObjectUrl = jest.fn().mockReturnValue('blob:test');
+    const revokeObjectUrl = jest.fn();
+
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      writable: true,
+      value: createObjectUrl,
+    });
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      writable: true,
+      value: revokeObjectUrl,
+    });
+
+    component.saveMarkdownWithCustomName('notes.md');
+
+    expect(createElementSpy).toHaveBeenCalledWith('a');
+    expect(anchor.href).toBe('blob:test');
+    expect(anchor.download).toBe('notes.md');
+    expect(click).toHaveBeenCalled();
+    expect(createObjectUrl).toHaveBeenCalled();
+    expect(revokeObjectUrl).toHaveBeenCalledWith('blob:test');
   });
 });

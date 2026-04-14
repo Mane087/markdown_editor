@@ -1,0 +1,41 @@
+<div id="head-modal" data-testid="modal-save-file-head" class="w-full border-b border-[#cccc]">
+  <p class="text-2xl text-gray-700 font-medium">Guardar archivo</p>
+</div>
+
+<div id="body-modal" data-testid="modal-save-file-body" class="flex flex-col py-4 gap-y-3">
+  <div class="flex flex-col justify-center">
+    <label for="save-file-name" class="mb-2">Nombre del archivo:</label>
+    <input
+      id="save-file-name"
+      data-testid="save-file-name"
+      type="text"
+      [value]="fileName()"
+      (input)="onInput($event)"
+      (keydown.enter)="saveModal()"
+      class="w-full h-10 rounded-md border border-[#cccc] focus:outline-none focus:ring-0 focus:border-gray-400 focus:border-2 px-3"
+    />
+  </div>
+</div>
+
+<div
+  id="footer-modal"
+  data-testid="modal-save-file-footer"
+  class="mx-auto flex justify-between items-center w-1/2 h-fit"
+>
+  <button
+    data-testid="save-file-confirm"
+    type="button"
+    (click)="saveModal()"
+    class="rounded-md border-none w-24 h-fit p-2 bg-gray-800 text-white text-base cursor-pointer hover:opacity-80 transition-opacity"
+  >
+    Guardar
+  </button>
+  <button
+    data-testid="save-file-cancel"
+    type="button"
+    (click)="closeModal()"
+    class="rounded-md border-none w-24 h-fit p-2 bg-gray-500 text-white text-base cursor-pointer hover:opacity-80 transition-opacity"
+  >
+    Cancelar
+  </button>
+</div>
