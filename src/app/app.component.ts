@@ -25,6 +25,7 @@ import { listIconsOthers } from './utils/data/list-other-options';
 import { ModalUrlComponent } from './components/modal-url/modal-url.component';
 import { ModalCodeComponent } from './components/modal-code/modal-code.component';
 import { ModalImageComponent } from './components/modal-image/modal-image.component';
+import { ModalSaveFileComponent } from './components/modal-save-file/modal-save-file.component';
 import { ModalTableComponent } from './components/modal-table/modal-table.component';
 import { ShortcutsService } from './services/shortcuts.service';
 import { ModalComponent } from './layouts/modal/modal.component';
@@ -33,6 +34,8 @@ import { codeExtension } from './config/marked-code';
 import { SelectComponent } from './components/select/select.component';
 import type { Options } from './utils/types/option';
 import { listAlerts } from './utils/data/list-alerts';
+import { MARKDOWN_FILE } from './config/markdown-file';
+import type { SaveFilePickerWindow } from './utils/types/save-file';
 
 marked.setOptions({
   gfm: true,
@@ -51,6 +54,7 @@ marked.use({ extensions: [alertExtension] });
     ModalUrlComponent,
     ModalImageComponent,
     ModalCodeComponent,
+    ModalSaveFileComponent,
     ModalTableComponent,
     ModalComponent,
     SelectComponent,
@@ -68,6 +72,7 @@ export class AppComponent {
   typeOfModal = signal<string>('');
   searchQuery = signal<string>('');
   lastMatchIndex = signal<number>(0);
+  suggestedMarkdownFileName = signal<string>(MARKDOWN_FILE.defaultName);
 
   listIconsText: AsideElement[] = listIconsText;
   listIconsOthers: AsideElement[] = listIconsOthers;
@@ -337,16 +342,66 @@ export class AppComponent {
     }
   }
 
-  downloadMarkdown() {
-    const content = this.inputValue();
-    const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+  private createMarkdownBlob(): Blob {
+    return new Blob([this.inputValue()], { type: `${MARKDOWN_FILE.mimeType};charset=utf-8` });
+  }
 
+  private triggerBrowserDownload(blob: Blob, fileName: string) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'document.md';
+    a.download = fileName;
     a.click();
-
     URL.revokeObjectURL(url);
+  }
+
+  private isAbortError(error: unknown): boolean {
+    return error instanceof DOMException && error.name === 'AbortError';
+  }
+
+  private openSaveFileModal(defaultFileName: string = MARKDOWN_FILE.defaultName) {
+    this.suggestedMarkdownFileName.set(defaultFileName);
+    this.openModal(true, 'Save File');
+  }
+
+  saveMarkdownWithCustomName(fileName: string) {
+    const blob = this.createMarkdownBlob();
+    this.triggerBrowserDownload(blob, fileName);
+    this.openModal(false, '');
+  }
+
+  async downloadMarkdown() {
+    const blob = this.createMarkdownBlob();
+    const pickerWindow = window as SaveFilePickerWindow;
+
+    if (!pickerWindow.showSaveFilePicker) {
+      this.openSaveFileModal();
+      return;
+    }
+
+    try {
+      const handle = await pickerWindow.showSaveFilePicker({
+        suggestedName: MARKDOWN_FILE.defaultName,
+        excludeAcceptAllOption: true,
+        types: [
+          {
+            description: MARKDOWN_FILE.description,
+            accept: {
+              [MARKDOWN_FILE.mimeType]: [MARKDOWN_FILE.extension],
+            },
+          },
+        ],
+      });
+
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+    } catch (error: unknown) {
+      if (this.isAbortError(error)) {
+        return;
+      }
+
+      this.openSaveFileModal();
+    }
   }
 }

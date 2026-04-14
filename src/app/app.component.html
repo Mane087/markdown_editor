@@ -246,6 +246,13 @@
           (hideOrShowModal)="openModal($event, '')"
         />
       }
+      @case ('Save File') {
+        <app-modal-save-file
+          [initialFileName]="suggestedMarkdownFileName()"
+          (hideOrShowModal)="openModal($event, '')"
+          (saveFileName)="saveMarkdownWithCustomName($event)"
+        />
+      }
     }
   </app-modal>
 </div>
