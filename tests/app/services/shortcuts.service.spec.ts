@@ -91,4 +91,20 @@ describe('ShortcutsService (Jest)', () => {
     expect(handled).toBe(false);
     expect(action).not.toHaveBeenCalled();
   });
+
+  it('should support shortcuts with shift modifier', () => {
+    const action = jest.fn();
+
+    service.register([{ combo: 'ctrl+shift+z', run: action }]);
+
+    const event = createKeyboardEvent('z', {
+      ctrlKey: true,
+      shiftKey: true,
+    });
+
+    const handled = service.handle(event);
+
+    expect(handled).toBe(true);
+    expect(action).toHaveBeenCalledTimes(1);
+  });
 });
