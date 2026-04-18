@@ -14,6 +14,13 @@ describe('AppComponent', () => {
   });
 
   beforeEach(async () => {
+    jest
+      .spyOn(window, 'requestAnimationFrame')
+      .mockImplementation((callback: FrameRequestCallback) => {
+        callback(0);
+        return 1;
+      });
+
     await TestBed.configureTestingModule({
       imports: [AppComponent],
       providers: [
@@ -173,6 +180,55 @@ describe('AppComponent', () => {
 
     component.addElement(value, 'start');
     expect(component.inputValue()).toBe('[Google](https://google.com) hello');
+  });
+
+  it('should highlight the first search match while typing', () => {
+    component.inputValue.set('Hello world hello');
+    fixture.detectChanges();
+
+    const textarea = fixture.nativeElement.querySelector('textarea') as HTMLTextAreaElement;
+    const searchInput = fixture.nativeElement.querySelector(
+      'input[type="search"]',
+    ) as HTMLInputElement;
+
+    searchInput.focus();
+    component.onSearchChange({ target: { value: 'hello' } } as unknown as Event);
+
+    expect(component.activeMatchIndex()).toBe(0);
+    expect(component.searchMatches()).toEqual([0, 12]);
+    expect(textarea.selectionStart).toBe(0);
+    expect(textarea.selectionEnd).toBe(5);
+    expect(document.activeElement).toBe(searchInput);
+  });
+
+  it('should navigate forward and backward between search matches', () => {
+    component.inputValue.set('alpha beta alpha beta');
+    fixture.detectChanges();
+
+    const textarea = fixture.nativeElement.querySelector('textarea') as HTMLTextAreaElement;
+
+    component.onSearchChange({ target: { value: 'beta' } } as unknown as Event);
+    component.findNextMatch();
+
+    expect(component.activeMatchIndex()).toBe(1);
+    expect(textarea.selectionStart).toBe(17);
+    expect(textarea.selectionEnd).toBe(21);
+
+    component.findPreviousMatch();
+
+    expect(component.activeMatchIndex()).toBe(0);
+    expect(textarea.selectionStart).toBe(6);
+    expect(textarea.selectionEnd).toBe(10);
+  });
+
+  it('should clear active search state when there are no matches', () => {
+    component.inputValue.set('alpha beta');
+
+    component.onSearchChange({ target: { value: 'gamma' } } as unknown as Event);
+
+    expect(component.activeMatchIndex()).toBe(-1);
+    expect(component.searchMatches()).toEqual([]);
+    expect(component.searchStatusText()).toBe('Sin coincidencias');
   });
 
   it('should open save picker and write markdown file when supported', async () => {

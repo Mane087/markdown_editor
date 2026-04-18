@@ -116,10 +116,6 @@
   caret-color: #f9fafb;
 }
 
-.editor-textarea::selection {
-  background: rgb(59 130 246 / 0.25);
-}
-
 .preview-panel {
   background: #ffffff;
   color: #111827;
