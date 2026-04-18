@@ -1,6 +1,6 @@
 {
   "name": "md-editor",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "lint-staged": {
     "*.{ts,html,css,scss,md,json}": [
       "prettier --write"
