@@ -84,9 +84,12 @@ export class AppComponent {
   readonly editorTextarea = viewChild.required<ElementRef<HTMLTextAreaElement>>('editorTextarea');
   readonly lineNumber = viewChild.required<ElementRef<HTMLDivElement>>('lineNumber');
 
+  private readonly maxHistoryEntries = 100;
   private shortcutsService = inject(ShortcutsService);
   private destroyRef = inject(DestroyRef);
   private renderer = inject(Renderer2);
+  private undoStack: string[] = [];
+  private redoStack: string[] = [];
 
   previewHtml = computed<string>(() => {
     const rawHtml = marked.parse(this.inputValue(), { async: false }) as string;
@@ -182,6 +185,14 @@ export class AppComponent {
         combo: 'ctrl+alt+f',
         run: () => this.fullOrMinPreviewToggle(),
       },
+      {
+        combo: 'ctrl+z',
+        run: () => this.undo(),
+      },
+      {
+        combo: 'ctrl+shift+z',
+        run: () => this.redo(),
+      },
     ];
 
     shortcuts.push(...shortcutHeadings, ...fixedShortcuts, ...shortcutsOthers);
@@ -195,7 +206,7 @@ export class AppComponent {
 
   onInput(event: Event) {
     const input = event.target as HTMLTextAreaElement;
-    this.inputValue.set(input.value);
+    this.updateEditorValue(input.value);
     this.refreshSearchSelection();
   }
 
@@ -247,7 +258,7 @@ export class AppComponent {
     const after = this.inputValue().slice(end);
     const newValue = before + text + after;
 
-    this.inputValue.set(newValue);
+    this.updateEditorValue(newValue);
     this.selectedText.set('');
 
     if (textarea) {
@@ -313,7 +324,7 @@ export class AppComponent {
         newValue = this.inputValue() + tag;
         break;
     }
-    this.inputValue.set(newValue);
+    this.updateEditorValue(newValue);
     this.selectedText.set('');
   }
 
@@ -331,7 +342,31 @@ export class AppComponent {
     const newValue = before + text + after;
 
     this.selectedText.set('');
-    return this.inputValue.set(newValue);
+    this.updateEditorValue(newValue);
+  }
+
+  undo() {
+    const previousValue = this.undoStack.pop();
+
+    if (previousValue === undefined) {
+      return;
+    }
+
+    this.redoStack.push(this.inputValue());
+    this.inputValue.set(previousValue);
+    this.refreshSearchSelection();
+  }
+
+  redo() {
+    const nextValue = this.redoStack.pop();
+
+    if (nextValue === undefined) {
+      return;
+    }
+
+    this.undoStack.push(this.inputValue());
+    this.inputValue.set(nextValue);
+    this.refreshSearchSelection();
   }
 
   hideOrShowPreviewToggle() {
@@ -381,6 +416,22 @@ export class AppComponent {
     const nextIndex = Math.min(Math.max(this.activeMatchIndex(), 0), matches.length - 1);
 
     this.selectMatch(nextIndex, true);
+  }
+
+  private updateEditorValue(nextValue: string) {
+    const currentValue = this.inputValue();
+
+    if (nextValue === currentValue) {
+      return;
+    }
+
+    this.undoStack.push(currentValue);
+    if (this.undoStack.length > this.maxHistoryEntries) {
+      this.undoStack.shift();
+    }
+
+    this.redoStack = [];
+    this.inputValue.set(nextValue);
   }
 
   private selectMatch(matchIndex: number, preserveFocus = false) {

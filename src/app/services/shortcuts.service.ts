@@ -16,7 +16,12 @@ export class ShortcutsService {
 
     const isCtrl = event.ctrlKey || event.metaKey;
 
-    const combo = [isCtrl && 'ctrl', event.altKey && 'alt', event.key.toLowerCase()]
+    const combo = [
+      isCtrl && 'ctrl',
+      event.altKey && 'alt',
+      event.shiftKey && 'shift',
+      event.key.toLowerCase(),
+    ]
       .filter(Boolean)
       .join('+');
 

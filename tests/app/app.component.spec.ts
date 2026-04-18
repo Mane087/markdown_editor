@@ -54,6 +54,34 @@ describe('AppComponent', () => {
     expect(component.inputValue()).toBe('hello');
   });
 
+  it('should undo and redo editor changes', () => {
+    component.inputValue.set('hello');
+
+    component.onInput({ target: { value: 'hello world' } } as unknown as Event);
+    component.onInput({ target: { value: 'hello world!!!' } } as unknown as Event);
+
+    component.undo();
+
+    expect(component.inputValue()).toBe('hello world');
+
+    component.undo();
+
+    expect(component.inputValue()).toBe('hello');
+
+    component.redo();
+
+    expect(component.inputValue()).toBe('hello world');
+  });
+
+  it('should register undo and redo shortcuts on init', () => {
+    expect(shortcutsService.register).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({ combo: 'ctrl+z' }),
+        expect.objectContaining({ combo: 'ctrl+shift+z' }),
+      ]),
+    );
+  });
+
   it('should append element when no text is selected', () => {
     component.inputValue.set('hello');
     component.selectedText.set('');
