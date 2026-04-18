@@ -2,7 +2,7 @@ import type { AsideElement } from '../types/button-option';
 
 export const listIconsOthers: AsideElement[] = [
   {
-    title: 'List',
+    title: 'List ctrl+alt+l',
     iconSrc: 'icons/list.svg',
     iconAlt: 'List Icon',
     tag: '-',
@@ -10,7 +10,7 @@ export const listIconsOthers: AsideElement[] = [
     combo: 'ctrl+alt+l',
   },
   {
-    title: 'List Numeric',
+    title: 'List Numeric ctrl+alt+n',
     iconSrc: 'icons/list-numeric.svg',
     iconAlt: 'List Numeric Icon',
     tag: '1.',
@@ -18,7 +18,7 @@ export const listIconsOthers: AsideElement[] = [
     combo: 'ctrl+alt+n',
   },
   {
-    title: 'Horizontal Rule',
+    title: 'Horizontal Rule  ctrl+alt+r',
     iconSrc: 'icons/line.svg',
     iconAlt: 'Horizontal Rule Icon',
     tag: '---',
@@ -26,7 +26,7 @@ export const listIconsOthers: AsideElement[] = [
     combo: 'ctrl+alt+r',
   },
   {
-    title: 'Code Inline',
+    title: 'Code Inline ctrl+alt+c',
     iconSrc: 'icons/code.svg',
     iconAlt: 'Code Inline Icon',
     tag: '``',

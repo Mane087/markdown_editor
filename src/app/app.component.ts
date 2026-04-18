@@ -69,9 +69,10 @@ export class AppComponent {
   fullOrMinPreview = signal<boolean>(false);
   darkEditorTheme = signal<boolean>(false);
   showModal = signal<boolean>(false);
+  showButtonMatch = signal<boolean>(false);
   typeOfModal = signal<string>('');
   searchQuery = signal<string>('');
-  lastMatchIndex = signal<number>(0);
+  activeMatchIndex = signal<number>(-1);
   suggestedMarkdownFileName = signal<string>(MARKDOWN_FILE.defaultName);
 
   listIconsText: AsideElement[] = listIconsText;
@@ -95,6 +96,43 @@ export class AppComponent {
   lineNumbers = computed<number[]>(() => {
     const lines = this.inputValue().split('\n').length;
     return Array.from({ length: lines }, (_, i) => i + 1);
+  });
+
+  searchMatches = computed<number[]>(() => {
+    const query = this.searchQuery().trim().toLowerCase();
+    if (!query) {
+      return [];
+    }
+
+    const text = this.inputValue().toLowerCase();
+    const matches: number[] = [];
+    let fromIndex = 0;
+
+    while (fromIndex <= text.length - query.length) {
+      const matchIndex = text.indexOf(query, fromIndex);
+      if (matchIndex === -1) {
+        break;
+      }
+
+      matches.push(matchIndex);
+      fromIndex = matchIndex + query.length;
+    }
+
+    return matches;
+  });
+
+  searchStatusText = computed<string>(() => {
+    const query = this.searchQuery().trim();
+    if (!query) {
+      return '';
+    }
+
+    const totalMatches = this.searchMatches().length;
+    if (totalMatches === 0) {
+      return 'Sin coincidencias';
+    }
+
+    return `${this.activeMatchIndex() + 1} / ${totalMatches}`;
   });
 
   constructor() {
@@ -158,6 +196,7 @@ export class AppComponent {
   onInput(event: Event) {
     const input = event.target as HTMLTextAreaElement;
     this.inputValue.set(input.value);
+    this.refreshSearchSelection();
   }
 
   onSelect(event: Event) {
@@ -169,44 +208,34 @@ export class AppComponent {
 
   onSearchChange(event: Event) {
     const input = event.target as HTMLInputElement;
+    if (input.value.length <= 0) {
+      this.showButtonMatch.set(false);
+      return;
+    }
     this.searchQuery.set(input.value);
-    this.lastMatchIndex.set(0);
+    this.selectMatch(0, true);
   }
 
   findNextMatch() {
-    const query = this.searchQuery().trim();
-    if (!query) {
+    this.showButtonMatch.set(true);
+    const matches = this.searchMatches();
+    if (matches.length === 0) {
       return;
     }
 
-    const text = this.inputValue();
-    const queryText = query.toLowerCase();
-    const textLower = text.toLowerCase();
-    const textarea = this.editorTextarea().nativeElement;
-    const currentIndex = textarea?.selectionEnd ?? this.lastMatchIndex();
+    const nextIndex = (this.activeMatchIndex() + 1 + matches.length) % matches.length;
+    this.selectMatch(nextIndex);
+  }
 
-    let index = textLower.indexOf(queryText, currentIndex);
-    if (index === -1 && currentIndex !== 0) {
-      index = textLower.indexOf(queryText, 0);
-    }
-
-    if (index === -1) {
+  findPreviousMatch() {
+    const matches = this.searchMatches();
+    if (matches.length === 0) {
       return;
     }
 
-    const end = index + query.length;
-    this.lastMatchIndex.set(end);
-
-    if (textarea) {
-      requestAnimationFrame(() => {
-        textarea.focus();
-        textarea.setSelectionRange(index, end);
-        const lineHeight = Number.parseFloat(getComputedStyle(textarea).lineHeight || '16');
-        const line = text.slice(0, index).split('\n').length - 1;
-        const targetTop = Math.max(0, line * lineHeight - textarea.clientHeight / 2);
-        textarea.scrollTop = targetTop;
-      });
-    }
+    const currentIndex = this.activeMatchIndex() >= 0 ? this.activeMatchIndex() : 0;
+    const previousIndex = (currentIndex - 1 + matches.length) % matches.length;
+    this.selectMatch(previousIndex);
   }
 
   insertTextAtCursor(text: string) {
@@ -340,6 +369,52 @@ export class AppComponent {
     if (this.shortcutsService.handle(event)) {
       return;
     }
+  }
+
+  private refreshSearchSelection() {
+    const matches = this.searchMatches();
+    if (!this.searchQuery().trim() || matches.length === 0) {
+      this.activeMatchIndex.set(-1);
+      return;
+    }
+
+    const nextIndex = Math.min(Math.max(this.activeMatchIndex(), 0), matches.length - 1);
+
+    this.selectMatch(nextIndex, true);
+  }
+
+  private selectMatch(matchIndex: number, preserveFocus = false) {
+    const query = this.searchQuery().trim();
+    const matches = this.searchMatches();
+    const matchStart = matches[matchIndex];
+
+    if (!query || matchStart === undefined) {
+      this.activeMatchIndex.set(-1);
+      return;
+    }
+
+    this.activeMatchIndex.set(matchIndex);
+
+    const textarea = this.editorTextarea().nativeElement;
+    const activeElement = preserveFocus ? document.activeElement : null;
+    const matchEnd = matchStart + query.length;
+    const text = this.inputValue();
+
+    requestAnimationFrame(() => {
+      textarea.setSelectionRange(matchStart, matchEnd);
+
+      const lineHeight = Number.parseFloat(getComputedStyle(textarea).lineHeight || '16');
+      const line = text.slice(0, matchStart).split('\n').length - 1;
+      const targetTop = Math.max(0, line * lineHeight - textarea.clientHeight / 2);
+      textarea.scrollTop = targetTop;
+      this.syncScroll();
+
+      if (preserveFocus && activeElement instanceof HTMLElement) {
+        activeElement.focus({ preventScroll: true });
+      } else {
+        textarea.focus();
+      }
+    });
   }
 
   private createMarkdownBlob(): Blob {

@@ -2,7 +2,7 @@ import type { AsideElement } from '../types/button-option';
 
 export const listIconsText: AsideElement[] = [
   {
-    title: 'Bold',
+    title: 'Bold ctrl+alt+b',
     iconSrc: 'icons/bold.svg',
     iconAlt: 'Bold Icon',
     tag: '<b></b>',
@@ -10,7 +10,7 @@ export const listIconsText: AsideElement[] = [
     combo: 'ctrl+alt+b',
   },
   {
-    title: 'Italic',
+    title: 'Italic ctrl+alt+i',
     iconSrc: 'icons/italic.svg',
     iconAlt: 'Italic Icon',
     tag: '<i></i>',
@@ -18,7 +18,7 @@ export const listIconsText: AsideElement[] = [
     combo: 'ctrl+alt+i',
   },
   {
-    title: 'Underlined',
+    title: 'Underlined ctrl+alt+s',
     iconSrc: 'icons/strikethrough.svg',
     iconAlt: 'Underlined Icon',
     tag: '<u></u>',
@@ -26,7 +26,7 @@ export const listIconsText: AsideElement[] = [
     combo: 'ctrl+alt+s',
   },
   {
-    title: 'Quote',
+    title: 'Quote ctrl+alt+q',
     iconSrc: 'icons/quote.svg',
     iconAlt: 'Quote Icon',
     tag: '>',

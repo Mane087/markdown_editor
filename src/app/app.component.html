@@ -15,11 +15,11 @@
             <img [src]="icon.iconSrc" [alt]="icon.iconAlt" />
           </li>
         }
-        <button class="button" title="Lowercase" (click)="toLowerCaseOrUpper('lower')">
+        <button class="button" title="Lowercase ctrl+alt+a" (click)="toLowerCaseOrUpper('lower')">
           <img src="icons/lowercase.svg" alt="" class="w-4 h-4" />
         </button>
 
-        <button class="button" title="Uppercase" (click)="toLowerCaseOrUpper('upper')">
+        <button class="button" title="Uppercase ctrl+alt+u" (click)="toLowerCaseOrUpper('upper')">
           <img src="icons/uppercase.svg" alt="Redo" class="w-5 h-5" />
         </button>
 
@@ -32,7 +32,7 @@
         >
           <option value="" selected hidden>H#</option>
           @for (heading of listHeadings; track $index) {
-            <option [value]="heading.value">{{ heading.content }}</option>
+            <option [value]="heading.value" [title]="heading.combo">{{ heading.content }}</option>
           }
         </select>
       </ul>
@@ -121,29 +121,38 @@
       </button>
     </nav>
     <div class="w-1/4 h-full flex items-center justify-end gap-x-3">
-      <div class="flex items-center gap-x-2">
+      <div class="flex items-center gap-x-2 bg-gray-700 rounded-r-lg">
         <input
           type="search"
           placeholder="Search"
-          class="h-9 w-50 px-3 rounded-lg border border-gray-300 text-sm outline-none bg-white placeholder:text-gray-300"
+          class="h-9 w-50 px-3 border border-gray-300 text-sm outline-none bg-white placeholder:text-gray-300"
+          [ngClass]="{ 'rounded-lg': !showButtonMatch(), 'rounded-l-lg': showButtonMatch() }"
+          [value]="searchQuery()"
           (input)="onSearchChange($event)"
           (keydown.enter)="findNextMatch()"
+          aria-label="Buscar texto en el editor"
         />
+        @if (showButtonMatch()) {
+          <button
+            type="button"
+            class="py-1 text-white cursor-pointer"
+            title="Coincidencia anterior"
+            (click)="findPreviousMatch()"
+            [disabled]="searchMatches().length === 0"
+          >
+            ↑
+          </button>
+          <button
+            type="button"
+            class="py-1 px-1 text-white cursor-pointer"
+            title="Coincidencia siguiente"
+            (click)="findNextMatch()"
+            [disabled]="searchMatches().length === 0"
+          >
+            ↓
+          </button>
+        }
       </div>
-      <button
-        title="Repository"
-        type="button"
-        class="flex items-center justify-center gap-x-2 p-2 border-none rounded-md bg-black hover:opacity-70 cursor-pointer"
-      >
-        <img src="icons/github.svg" alt="GitHub" />
-        <a
-          href="https://github.com/Mane087/markdown_editor"
-          target="_blank"
-          rel="repositorio"
-          class="text-white font-medium text-base"
-          >GitHub</a
-        >
-      </button>
       <label
         class="theme-switch"
         [class.theme-switch-dark]="darkEditorTheme()"
@@ -166,7 +175,7 @@
       </label>
     </div>
   </header>
-  <main class="w-full h-[85%] flex px-4">
+  <main class="w-full h-[82%] flex px-4">
     @if (!fullOrMinPreview()) {
       <div
         [ngClass]="{
@@ -214,8 +223,23 @@
       </div>
     }
   </main>
-  <footer class="h-[7%]">
-    <div class="w-full h-full flex flex-col justify-center items-center overflow-y-auto">
+  <footer class="h-[10%]">
+    <div class="w-full h-full flex flex-col gap-y-2 justify-center items-center">
+      <button
+        title="Repository"
+        type="button"
+        class="w-fit flex items-center justify-center gap-x-2 p-2 border-none rounded-md bg-black hover:opacity-70 cursor-pointer"
+      >
+        <img src="icons/github.svg" alt="GitHub" />
+        <a
+          href="https://github.com/Mane087/markdown_editor"
+          target="_blank"
+          rel="repositorio"
+          class="text-white font-medium text-base"
+          target="_blank"
+          >GitHub</a
+        >
+      </button>
       <p class="text-sm text-gray-500">Markdown Editor. Open Source Proyect</p>
     </div>
   </footer>
