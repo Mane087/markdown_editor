@@ -2,18 +2,23 @@ import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 
 import { AppComponent } from '../../src/app/app.component';
+import { ClipboardImageStorageService } from '../../src/app/services/clipboard-image-storage.service';
 import { ShortcutsService } from '../../src/app/services/shortcuts.service';
 
 describe('AppComponent', () => {
   let component: AppComponent;
   let fixture: ComponentFixture<AppComponent>;
   let shortcutsService: jest.Mocked<ShortcutsService>;
+  let clipboardImageStorage: jest.Mocked<ClipboardImageStorageService>;
 
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
   beforeEach(async () => {
+    localStorage.clear();
+    sessionStorage.clear();
+
     jest
       .spyOn(window, 'requestAnimationFrame')
       .mockImplementation((callback: FrameRequestCallback) => {
@@ -31,12 +36,30 @@ describe('AppComponent', () => {
             handle: jest.fn().mockReturnValue(false),
           },
         },
+        {
+          provide: ClipboardImageStorageService,
+          useValue: {
+            extractImageFileFromClipboard: jest.fn().mockReturnValue(null),
+            normalizeMarkdownContent: jest.fn(async (markdown: string) => markdown),
+            saveImage: jest.fn(),
+            createStorageReference: jest.fn((imageId: string) => `local-image://${imageId}`),
+            serializeMarkdownContent: jest.fn((markdown: string) => markdown),
+            resolveImageSource: jest.fn((source: string) =>
+              source === 'local-image://image-1' ? 'data:image/png;base64,abc123' : source,
+            ),
+            clearImages: jest.fn(),
+            syncImagesWithMarkdownHistory: jest.fn(),
+          },
+        },
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AppComponent);
     component = fixture.componentInstance;
     shortcutsService = TestBed.inject(ShortcutsService) as jest.Mocked<ShortcutsService>;
+    clipboardImageStorage = TestBed.inject(
+      ClipboardImageStorageService,
+    ) as jest.Mocked<ClipboardImageStorageService>;
     fixture.detectChanges();
   });
 
@@ -52,6 +75,18 @@ describe('AppComponent', () => {
     component.onInput(event);
 
     expect(component.inputValue()).toBe('hello');
+    expect(sessionStorage.getItem('md-editor-content')).toBe('hello');
+  });
+
+  it('should restore persisted editor content on init', async () => {
+    sessionStorage.setItem('md-editor-content', '# persisted content');
+
+    const persistedFixture = TestBed.createComponent(AppComponent);
+    const persistedComponent = persistedFixture.componentInstance;
+    persistedFixture.detectChanges();
+
+    expect(persistedComponent.inputValue()).toBe('# persisted content');
+    expect(persistedComponent.previewHtml()).toContain('<h1>persisted content</h1>');
   });
 
   it('should undo and redo editor changes', () => {
@@ -71,6 +106,7 @@ describe('AppComponent', () => {
     component.redo();
 
     expect(component.inputValue()).toBe('hello world');
+    expect(sessionStorage.getItem('md-editor-content')).toBe('hello world');
   });
 
   it('should register undo and redo shortcuts on init', () => {
@@ -259,8 +295,158 @@ describe('AppComponent', () => {
     expect(component.searchStatusText()).toBe('Sin coincidencias');
   });
 
+  it('should persist pasted clipboard images and insert a local reference', async () => {
+    const imageFile = new File(['image'], 'clipboard.png', { type: 'image/png' });
+    const preventDefault = jest.fn();
+
+    clipboardImageStorage.extractImageFileFromClipboard.mockReturnValue(imageFile);
+    clipboardImageStorage.saveImage.mockResolvedValue({
+      id: 'image-1',
+      name: 'clipboard.png',
+      dataUrl: 'data:image/png;base64,abc123',
+      createdAt: Date.now(),
+    });
+
+    await component.onEditorPaste({
+      clipboardData: {} as DataTransfer,
+      preventDefault,
+    } as unknown as ClipboardEvent);
+
+    expect(preventDefault).toHaveBeenCalled();
+    expect(clipboardImageStorage.saveImage).toHaveBeenCalledWith(imageFile, 'clipboard.png');
+    expect(component.inputValue()).toBe('![clipboard.png](local-image://image-1)');
+    expect(clipboardImageStorage.syncImagesWithMarkdownHistory).toHaveBeenCalledWith([
+      '![clipboard.png](local-image://image-1)',
+      '',
+    ]);
+  });
+
+  it('should keep deleted local images while they are still recoverable through undo', () => {
+    component.inputValue.set('![clipboard](local-image://image-1)');
+
+    component.onInput({ target: { value: '' } } as unknown as Event);
+
+    expect(component.inputValue()).toBe('');
+    expect(clipboardImageStorage.syncImagesWithMarkdownHistory).toHaveBeenCalledWith([
+      '',
+      '![clipboard](local-image://image-1)',
+    ]);
+  });
+
+  it('should keep local image references available after undo restores deleted content', () => {
+    component.onInput({
+      target: { value: '![clipboard](local-image://image-1)' },
+    } as unknown as Event);
+    component.onInput({ target: { value: '' } } as unknown as Event);
+
+    component.undo();
+
+    expect(component.inputValue()).toBe('![clipboard](local-image://image-1)');
+    expect(clipboardImageStorage.syncImagesWithMarkdownHistory).toHaveBeenLastCalledWith([
+      '![clipboard](local-image://image-1)',
+      '',
+      '',
+    ]);
+  });
+
+  it('should alert and avoid inserting pasted images larger than the allowed size', async () => {
+    const imageFile = new File(['image'], 'too-large.png', { type: 'image/png' });
+    const preventDefault = jest.fn();
+    const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => undefined);
+
+    clipboardImageStorage.extractImageFileFromClipboard.mockReturnValue(imageFile);
+    clipboardImageStorage.saveImage.mockRejectedValue(
+      new Error('The image is too large. Maximum size: 1 MB.'),
+    );
+
+    await component.onEditorPaste({
+      clipboardData: {} as DataTransfer,
+      preventDefault,
+    } as unknown as ClipboardEvent);
+
+    expect(preventDefault).toHaveBeenCalled();
+    expect(alertSpy).toHaveBeenCalledWith('The image is too large. Maximum size: 1 MB.');
+    expect(component.inputValue()).toBe('');
+  });
+
+  it('should resolve stored clipboard images in the preview html', () => {
+    component.inputValue.set('![clipboard](local-image://image-1)');
+
+    expect(component.previewHtml()).toContain('src="data:image/png;base64,abc123"');
+  });
+
+  it('should normalize uploaded base64 images into local references before inserting them', async () => {
+    const fileReaderMock = {
+      result: '![uploaded](data:image/png;base64,uploaded123)',
+      onload: null as null | (() => void),
+      readAsText: jest.fn(function (this: { onload: null | (() => Promise<void> | void) }) {
+        return this.onload?.();
+      }),
+    };
+    clipboardImageStorage.normalizeMarkdownContent.mockResolvedValue(
+      '![uploaded](local-image://image-1)',
+    );
+
+    const fileReaderSpy = jest
+      .spyOn(window as typeof window & { FileReader: typeof FileReader }, 'FileReader')
+      .mockImplementation(() => fileReaderMock as unknown as FileReader);
+
+    component.onFileUpload({
+      target: {
+        files: [new File(['markdown'], 'notes.md', { type: 'text/markdown' })],
+        value: 'notes.md',
+      },
+    } as unknown as Event);
+
+    await Promise.resolve();
+
+    expect(clipboardImageStorage.normalizeMarkdownContent).toHaveBeenCalledWith(
+      '![uploaded](data:image/png;base64,uploaded123)',
+    );
+    expect(component.inputValue()).toBe('![uploaded](local-image://image-1)');
+    expect(component.previewHtml()).toContain('src="data:image/png;base64,abc123"');
+
+    fileReaderSpy.mockRestore();
+  });
+
+  it('should alert and abort upload when imported images exceed the storage limit', async () => {
+    const fileReaderMock = {
+      result: '![uploaded](data:image/png;base64,uploaded123)',
+      onload: null as null | (() => void),
+      readAsText: jest.fn(function (this: { onload: null | (() => Promise<void> | void) }) {
+        return this.onload?.();
+      }),
+    };
+    const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => undefined);
+
+    clipboardImageStorage.normalizeMarkdownContent.mockRejectedValue(
+      new Error('Local image storage is full. Maximum total size: 2 MB.'),
+    );
+
+    const fileReaderSpy = jest
+      .spyOn(window as typeof window & { FileReader: typeof FileReader }, 'FileReader')
+      .mockImplementation(() => fileReaderMock as unknown as FileReader);
+
+    component.onFileUpload({
+      target: {
+        files: [new File(['markdown'], 'notes.md', { type: 'text/markdown' })],
+        value: 'notes.md',
+      },
+    } as unknown as Event);
+
+    await Promise.resolve();
+
+    expect(alertSpy).toHaveBeenCalledWith('Local image storage is full. Maximum total size: 2 MB.');
+    expect(component.inputValue()).toBe('');
+
+    fileReaderSpy.mockRestore();
+  });
+
   it('should open save picker and write markdown file when supported', async () => {
-    component.inputValue.set('# Hello');
+    component.inputValue.set('![clipboard](local-image://image-1)');
+    clipboardImageStorage.serializeMarkdownContent.mockReturnValue(
+      '![clipboard](data:image/png;base64,abc123)',
+    );
 
     const write = jest.fn().mockResolvedValue(undefined);
     const close = jest.fn().mockResolvedValue(undefined);
@@ -291,6 +477,10 @@ describe('AppComponent', () => {
     expect(write).toHaveBeenCalledTimes(1);
     expect(write.mock.calls[0][0]).toBeTruthy();
     expect(close).toHaveBeenCalled();
+    expect(clipboardImageStorage.serializeMarkdownContent).toHaveBeenCalledWith(
+      '![clipboard](local-image://image-1)',
+    );
+    expect(clipboardImageStorage.clearImages).toHaveBeenCalled();
   });
 
   it('should fallback to browser download when save picker is unavailable', async () => {
@@ -307,6 +497,7 @@ describe('AppComponent', () => {
     expect(component.showModal()).toBe(true);
     expect(component.typeOfModal()).toBe('Save File');
     expect(component.suggestedMarkdownFileName()).toBe('document.md');
+    expect(clipboardImageStorage.clearImages).not.toHaveBeenCalled();
   });
 
   it('should not trigger fallback when user cancels save picker', async () => {
@@ -334,6 +525,7 @@ describe('AppComponent', () => {
 
     expect(showSaveFilePicker).toHaveBeenCalled();
     expect(createObjectUrl).not.toHaveBeenCalled();
+    expect(clipboardImageStorage.clearImages).not.toHaveBeenCalled();
   });
 
   it('should open custom save modal when save picker fails', async () => {
@@ -351,10 +543,14 @@ describe('AppComponent', () => {
 
     expect(component.showModal()).toBe(true);
     expect(component.typeOfModal()).toBe('Save File');
+    expect(clipboardImageStorage.clearImages).not.toHaveBeenCalled();
   });
 
   it('should download markdown with custom filename', () => {
-    component.inputValue.set('# Hello');
+    component.inputValue.set('![clipboard](local-image://image-1)');
+    clipboardImageStorage.serializeMarkdownContent.mockReturnValue(
+      '![clipboard](data:image/png;base64,abc123)',
+    );
 
     const click = jest.fn();
     const anchor = { href: '', download: '', click } as unknown as HTMLAnchorElement;
@@ -381,5 +577,6 @@ describe('AppComponent', () => {
     expect(click).toHaveBeenCalled();
     expect(createObjectUrl).toHaveBeenCalled();
     expect(revokeObjectUrl).toHaveBeenCalledWith('blob:test');
+    expect(clipboardImageStorage.clearImages).toHaveBeenCalled();
   });
 });

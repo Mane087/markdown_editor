@@ -1,6 +1,5 @@
 <div class="w-full h-dvh mx-auto flex flex-col">
-  <header class="w-full h-[8%] px-5 py-3 flex items-center">
-    <img src="icons/logo_app.svg" alt="Markdown Editor" class="h-12 w-12 mr-3" />
+  <header class="w-full h-[8%] py-3 flex items-center">
     <nav class="w-3/4 h-full flex px-3 items-center">
       <ul id="options-list-text" class="options-list">
         @for (icon of listIconsText; track $index) {
@@ -100,10 +99,12 @@
         [title]="hideOrShowPreview() ? 'Hide Preview' : 'Show Preview'"
         (click)="hideOrShowPreviewToggle()"
       >
-        @if (hideOrShowPreview()) {
-          <img src="icons/close_eye.svg" alt="open_eye" class="w-6 h-6" />
-        } @else {
-          <img src="icons/eye.svg" alt="close_eye" class="w-6 h-6" />
+        @if (!fullOrMinPreview()) {
+          @if (hideOrShowPreview()) {
+            <img src="icons/close_eye.svg" alt="open_eye" class="w-6 h-6" />
+          } @else {
+            <img src="icons/eye.svg" alt="close_eye" class="w-6 h-6" />
+          }
         }
       </button>
 
@@ -113,10 +114,12 @@
         (click)="fullOrMinPreviewToggle()"
         [disabled]="!hideOrShowPreview()"
       >
-        @if (!fullOrMinPreview()) {
-          <img src="icons/full_preview.svg" alt="open_eye" class="w-6 h-6" />
-        } @else {
-          <img src="icons/min_preview.svg" alt="close_eye" class="w-6 h-6" />
+        @if (hideOrShowPreview()) {
+          @if (!fullOrMinPreview()) {
+            <img src="icons/full_preview.svg" alt="open_eye" class="w-6 h-6" />
+          } @else {
+            <img src="icons/min_preview.svg" alt="close_eye" class="w-6 h-6" />
+          }
         }
       </button>
     </nav>
@@ -188,7 +191,11 @@
         <div
           #lineNumber
           id="lineNumber"
-          class="line-number-panel w-[5%] h-full border-r border-[#cccc] flex flex-col gap-y-1 items-center pt-5 overflow-y-hidden"
+          [ngClass]="{
+            'w-[2%]': !hideOrShowPreview(),
+            'w-[5%]': hideOrShowPreview(),
+          }"
+          class="line-number-panel h-full border-r border-[#cccc] flex flex-col gap-y-1 items-center pt-5 overflow-y-hidden"
         >
           @for (lineNumber of lineNumbers(); track lineNumber) {
             <span class="line-number w-full text-center text-sm select-none">
@@ -202,6 +209,7 @@
           class="editor-textarea w-[95%] h-full p-5 text-left resize-none outline-none border-none overflow-y-auto"
           (scroll)="syncScroll()"
           (input)="onInput($event)"
+          (paste)="onEditorPaste($event)"
           [value]="inputValue()"
           (select)="onSelect($event)"
         >
@@ -248,12 +256,6 @@
     @switch (typeOfModal()) {
       @case ('Link') {
         <app-modal-url
-          (hideOrShowModal)="openModal($event, '')"
-          (modalValue)="addElement($event, 'start')"
-        />
-      }
-      @case ('Image') {
-        <app-modal-image
           (hideOrShowModal)="openModal($event, '')"
           (modalValue)="addElement($event, 'start')"
         />

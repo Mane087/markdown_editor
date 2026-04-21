@@ -30,6 +30,11 @@ El editor cuenta con un conjunto de botones interactivos que permiten insertar a
 
 Esto permite enfocarse en el contenido sin perder tiempo escribiendo sintaxis manualmente.
 
+- Soporta pegar imágenes desde el portapapeles directamente en el textarea del editor y en el modal de imagen.
+- Las imágenes pegadas se guardan localmente en `localStorage` y se insertan en el Markdown mediante referencias `local-image://...`.
+- La vista previa resuelve esas referencias locales para mostrar la imagen renderizada sin subir archivos a un servidor.
+- Estas referencias dependen del almacenamiento local del navegador, por lo que el Markdown resultante no es portable como imagen real fuera de ese entorno.
+
 ![menu_app](/public/imgs/menu_app.png)
 
 Puedes consultar el detalle completo de las funcionalidades disponibles en la sección de: [opciones del editor](/documentation/options_es.md).

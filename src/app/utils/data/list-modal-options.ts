@@ -8,12 +8,6 @@ export const listIconsModal: AsideElementModal[] = [
     id: 'open-modal-url',
   },
   {
-    title: 'Image',
-    iconSrc: 'icons/img.svg',
-    iconAlt: 'Italic Icon',
-    id: 'open-modal-image',
-  },
-  {
     title: 'Bloc Code',
     iconSrc: 'icons/code_bloc.svg',
     iconAlt: 'Strikethrough Icon',
