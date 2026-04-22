@@ -24,10 +24,10 @@ import { listIconsOthers } from './utils/data/list-other-options';
 
 import { ModalUrlComponent } from './components/modal-url/modal-url.component';
 import { ModalCodeComponent } from './components/modal-code/modal-code.component';
-import { ModalImageComponent } from './components/modal-image/modal-image.component';
 import { ModalSaveFileComponent } from './components/modal-save-file/modal-save-file.component';
 import { ModalTableComponent } from './components/modal-table/modal-table.component';
 import { ShortcutsService } from './services/shortcuts.service';
+import { ClipboardImageStorageService } from './services/clipboard-image-storage.service';
 import { ModalComponent } from './layouts/modal/modal.component';
 import { alertExtension } from './config/marked-tips';
 import { codeExtension } from './config/marked-code';
@@ -52,7 +52,6 @@ marked.use({ extensions: [alertExtension] });
     RouterOutlet,
     NgClass,
     ModalUrlComponent,
-    ModalImageComponent,
     ModalCodeComponent,
     ModalSaveFileComponent,
     ModalTableComponent,
@@ -63,7 +62,8 @@ marked.use({ extensions: [alertExtension] });
   styleUrls: ['./app.component.css'],
 })
 export class AppComponent {
-  inputValue = signal<string>('');
+  private readonly editorContentStorageKey = 'md-editor-content';
+  inputValue = signal<string>(this.getPersistedEditorContent());
   selectedText = signal<string>('');
   hideOrShowPreview = signal<boolean>(true);
   fullOrMinPreview = signal<boolean>(false);
@@ -86,6 +86,7 @@ export class AppComponent {
 
   private readonly maxHistoryEntries = 100;
   private shortcutsService = inject(ShortcutsService);
+  private clipboardImageStorage = inject(ClipboardImageStorageService);
   private destroyRef = inject(DestroyRef);
   private renderer = inject(Renderer2);
   private undoStack: string[] = [];
@@ -93,7 +94,14 @@ export class AppComponent {
 
   previewHtml = computed<string>(() => {
     const rawHtml = marked.parse(this.inputValue(), { async: false }) as string;
-    return DOMPurify.sanitize(rawHtml, { USE_PROFILES: { html: true } });
+
+    // Resolve local clipboard image references before sanitizing the final preview HTML.
+    const htmlWithResolvedImages = rawHtml.replace(/src="([^"]+)"/g, (_match, source: string) => {
+      const resolvedSource = this.clipboardImageStorage.resolveImageSource(source);
+      return `src="${resolvedSource}"`;
+    });
+
+    return DOMPurify.sanitize(htmlWithResolvedImages, { USE_PROFILES: { html: true } });
   });
 
   lineNumbers = computed<number[]>(() => {
@@ -279,13 +287,40 @@ export class AppComponent {
     }
 
     const reader = new FileReader();
-    reader.onload = () => {
-      const content = typeof reader.result === 'string' ? reader.result : '';
-      this.insertTextAtCursor(content);
-      input.value = '';
+    reader.onload = async () => {
+      try {
+        const content = typeof reader.result === 'string' ? reader.result : '';
+        const normalizedContent =
+          await this.clipboardImageStorage.normalizeMarkdownContent(content);
+
+        this.insertTextAtCursor(normalizedContent);
+      } catch (error: unknown) {
+        this.showImageStorageAlert(error);
+      } finally {
+        input.value = '';
+      }
     };
 
     reader.readAsText(file);
+  }
+
+  async onEditorPaste(event: ClipboardEvent) {
+    const imageFile = this.clipboardImageStorage.extractImageFileFromClipboard(event.clipboardData);
+
+    if (!imageFile) {
+      return;
+    }
+
+    event.preventDefault();
+
+    try {
+      const storedImage = await this.clipboardImageStorage.saveImage(imageFile, imageFile.name);
+      const imageReference = this.clipboardImageStorage.createStorageReference(storedImage.id);
+
+      this.insertTextAtCursor(`![${storedImage.name}](${imageReference})`);
+    } catch (error: unknown) {
+      this.showImageStorageAlert(error);
+    }
   }
 
   addElement(tag: string, insert: 'start' | 'between' | '') {
@@ -354,6 +389,8 @@ export class AppComponent {
 
     this.redoStack.push(this.inputValue());
     this.inputValue.set(previousValue);
+    this.persistEditorContent(previousValue);
+    this.syncClipboardImagesWithHistory();
     this.refreshSearchSelection();
   }
 
@@ -366,6 +403,8 @@ export class AppComponent {
 
     this.undoStack.push(this.inputValue());
     this.inputValue.set(nextValue);
+    this.persistEditorContent(nextValue);
+    this.syncClipboardImagesWithHistory();
     this.refreshSearchSelection();
   }
 
@@ -432,6 +471,24 @@ export class AppComponent {
 
     this.redoStack = [];
     this.inputValue.set(nextValue);
+    this.persistEditorContent(nextValue);
+    this.syncClipboardImagesWithHistory();
+  }
+
+  private syncClipboardImagesWithHistory() {
+    this.clipboardImageStorage.syncImagesWithMarkdownHistory([
+      this.inputValue(),
+      ...this.undoStack,
+      ...this.redoStack,
+    ]);
+  }
+
+  private getPersistedEditorContent(): string {
+    return sessionStorage.getItem(this.editorContentStorageKey) ?? '';
+  }
+
+  private persistEditorContent(content: string) {
+    sessionStorage.setItem(this.editorContentStorageKey, content);
   }
 
   private selectMatch(matchIndex: number, preserveFocus = false) {
@@ -469,7 +526,11 @@ export class AppComponent {
   }
 
   private createMarkdownBlob(): Blob {
-    return new Blob([this.inputValue()], { type: `${MARKDOWN_FILE.mimeType};charset=utf-8` });
+    const serializedMarkdown = this.clipboardImageStorage.serializeMarkdownContent(
+      this.inputValue(),
+    );
+
+    return new Blob([serializedMarkdown], { type: `${MARKDOWN_FILE.mimeType};charset=utf-8` });
   }
 
   private triggerBrowserDownload(blob: Blob, fileName: string) {
@@ -485,6 +546,11 @@ export class AppComponent {
     return error instanceof DOMException && error.name === 'AbortError';
   }
 
+  private showImageStorageAlert(error: unknown): void {
+    const message = error instanceof Error ? error.message : 'Could not store the image.';
+    window.alert(message);
+  }
+
   private openSaveFileModal(defaultFileName: string = MARKDOWN_FILE.defaultName) {
     this.suggestedMarkdownFileName.set(defaultFileName);
     this.openModal(true, 'Save File');
@@ -493,6 +559,7 @@ export class AppComponent {
   saveMarkdownWithCustomName(fileName: string) {
     const blob = this.createMarkdownBlob();
     this.triggerBrowserDownload(blob, fileName);
+    this.clipboardImageStorage.clearImages();
     this.openModal(false, '');
   }
 
@@ -522,6 +589,7 @@ export class AppComponent {
       const writable = await handle.createWritable();
       await writable.write(blob);
       await writable.close();
+      this.clipboardImageStorage.clearImages();
     } catch (error: unknown) {
       if (this.isAbortError(error)) {
         return;
