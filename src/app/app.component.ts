@@ -36,6 +36,7 @@ import type { Options } from './utils/types/option';
 import { listAlerts } from './utils/data/list-alerts';
 import { MARKDOWN_FILE } from './config/markdown-file';
 import type { SaveFilePickerWindow } from './utils/types/save-file';
+import { ThemeCookieService } from './services/theme-cookie.service';
 
 marked.setOptions({
   gfm: true,
@@ -87,6 +88,7 @@ export class AppComponent {
   private readonly maxHistoryEntries = 100;
   private shortcutsService = inject(ShortcutsService);
   private clipboardImageStorage = inject(ClipboardImageStorageService);
+  private themeCookieService = inject(ThemeCookieService);
   private destroyRef = inject(DestroyRef);
   private renderer = inject(Renderer2);
   private undoStack: string[] = [];
@@ -147,6 +149,12 @@ export class AppComponent {
   });
 
   constructor() {
+    const persistedTheme = this.themeCookieService.getTheme();
+    const isDarkTheme = persistedTheme === 'dark';
+
+    this.darkEditorTheme.set(isDarkTheme);
+    this.applyDocumentThemeClass(isDarkTheme);
+
     const removeListener = this.renderer.listen('window', 'keydown', (event: KeyboardEvent) => {
       this.handleKey(event);
     });
@@ -417,7 +425,10 @@ export class AppComponent {
   }
 
   toggleEditorTheme() {
-    this.darkEditorTheme.set(!this.darkEditorTheme());
+    const nextIsDarkTheme = !this.darkEditorTheme();
+    this.darkEditorTheme.set(nextIsDarkTheme);
+    this.themeCookieService.setTheme(nextIsDarkTheme ? 'dark' : 'light');
+    this.applyDocumentThemeClass(nextIsDarkTheme);
   }
 
   onHeadingChange(event: Event) {
@@ -489,6 +500,10 @@ export class AppComponent {
 
   private persistEditorContent(content: string) {
     sessionStorage.setItem(this.editorContentStorageKey, content);
+  }
+
+  private applyDocumentThemeClass(isDarkTheme: boolean): void {
+    document.documentElement.classList.toggle('dark', isDarkTheme);
   }
 
   private selectMatch(matchIndex: number, preserveFocus = false) {

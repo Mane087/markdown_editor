@@ -2,6 +2,44 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <script>
+      (function () {
+        var readCookie = function (name) {
+          var raw = document.cookie || '';
+          if (!raw) return null;
+
+          var entries = raw.split(';');
+          var matchedValue = null;
+          for (var i = 0; i < entries.length; i++) {
+            var item = entries[i].trim();
+            var separatorIndex = item.indexOf('=');
+
+            if (separatorIndex <= 0) continue;
+
+            var key = item.slice(0, separatorIndex).trim();
+            if (key !== name) continue;
+
+            var value = item.slice(separatorIndex + 1).trim();
+            try {
+              matchedValue = decodeURIComponent(value);
+            } catch (_error) {
+              matchedValue = value;
+            }
+          }
+
+          return matchedValue;
+        };
+
+        var theme = readCookie('theme');
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        }
+
+        if (theme === 'light') {
+          document.documentElement.classList.remove('dark');
+        }
+      })();
+    </script>
     <title>MD-Editor</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
